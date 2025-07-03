@@ -23,6 +23,14 @@ repositories {
 	mavenCentral()
 }
 
+processResources.dependsOn('copySecret')
+
+tasks.register('copySecret', Copy) {
+	from './graduate-config'
+	include "application*.yml"  // 복사할 파일들
+	into 'src/main/resources'  // 복사 위치
+}
+
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
