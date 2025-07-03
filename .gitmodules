@@ -1,0 +1,3 @@
+[submodule "graduate-config"]
+	path = graduate-config
+	url = https://github.com/DearGraduate/graduate-config.git
