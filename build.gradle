@@ -23,13 +23,6 @@ repositories {
 	mavenCentral()
 }
 
-processResources.dependsOn('copySecret')
-
-tasks.register('copySecret', Copy) {
-	from './graduate-config'
-	include "application*.yml"  // 복사할 파일들
-	into 'src/main/resources'  // 복사 위치
-}
 
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
@@ -51,8 +44,16 @@ dependencies {
 	//security
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 
+	//jwt
+	implementation 'io.jsonwebtoken:jjwt-api:0.12.3'
+	implementation 'io.jsonwebtoken:jjwt-impl:0.12.3'
+	implementation 'io.jsonwebtoken:jjwt-jackson:0.12.3'
+
 	//swagger
 	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0'
+
+	//env 파일 로드
+	implementation 'io.github.cdimascio:dotenv-java:2.2.0'
 
 	//test
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'

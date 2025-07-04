@@ -14,12 +14,12 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @OpenAPIDefinition(
         info = @Info(
-                title = "SwaggerTest API 명세서",
-                description = "Swagger API 문서입니다.",
+                title = "졸축위 API 명세서",
+                description = "졸업축하위원회 API 문서입니다.",
                 version = "v1",
                 contact = @Contact(
-                        name = "스웨거 테스트",
-                        url = "https://도메인주소.com"
+                        name = "졸업축하위원회",
+                        url = "http://localhost:3000"
                 )
         ),
         security = @SecurityRequirement(name = "bearerAuth"),
