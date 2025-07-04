@@ -30,3 +30,18 @@ spring:
         hbm2ddl:
           auto: update
         default_batch_fetch_size: 1000
+
+#monitoring
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      show-details: always
+    prometheus:
+      enabled: true
+  metrics:
+    tags:
+      application: graduate
