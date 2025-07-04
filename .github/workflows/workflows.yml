@@ -68,7 +68,7 @@ jobs:
           host: ${{ secrets.SERVER_IP }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.PRIVATE_KEY }}
-          source: "docker-compose.yml"
+          source: "docker-compose.yml,prometheus.yml"
           target: "~/app/"  # 서버의 저장 경로
 
       # 서버에 배포

@@ -29,7 +29,7 @@ spring:
         use_sql_comments: true
         hbm2ddl:
           auto: update
-        default_batch_fetch_size:
+        default_batch_fetch_size: 1000
 
 #monitoring
 management:
