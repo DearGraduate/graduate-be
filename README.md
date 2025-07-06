@@ -20,17 +20,12 @@
 - main: 배포 가능한 브랜치, 항상 배포 가능한 상태를 유지
 - feature/{description}: 새로운 기능을 개발하는 브랜치
 - 예: feature/add-login-page
-### Flow
-1. main 브랜치에서 새로운 브랜치를 생성.
-2. 작업을 완료하고 커밋 메시지에 맞게 커밋.
-3. Pull Request를 생성 / 팀원들의 리뷰.
-4. 리뷰가 완료되면 main 브랜치로 병합.
-5. 병합 후, 필요시 배포.
-예시:
-bash # 새로운 기능 개발 git checkout -b feature/add-login-page # 작업 완료 후, main 브랜치로 병합 git checkout main git pull origin main git merge feature/add-login-page git push origin main git commit -m " "
-
-feat :
-chore :
-fix :
-build :
-..
+## 💡Flow
+1. issue를 등록한다.
+2. 깃 컨벤션에 맞게 Branch를 생성한다.
+3. Add - Commit - Push - Pull Request 의 과정을 거친다.
+4. Github에서 PR을 생성하고, 해당 PR에 관한 리뷰를 요청한다.
+5. 리뷰에서 Approve를 받지 못했다면, 수정 사항을 처리해서 다시 올린다.
+6. Approve를 받았다면, Merge를 진행한다.
+7. merge된 Branch는 삭제한다.
+8. 종료된 Issue와 Pull Request의 Label과 Project를 관리한다.
