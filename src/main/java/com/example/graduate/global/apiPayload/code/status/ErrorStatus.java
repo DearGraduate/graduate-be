@@ -14,6 +14,10 @@ public enum ErrorStatus implements BaseErrorCode {
   USER_NOT_FOUND("USER4001", "존재하지 않는 사용자입니다.", HttpStatus.NOT_FOUND),
 
   // AUTH 관련 에러
+  TOKEN_NOT_FOUND("AUTH4006", "리프레시 토큰이 필요합니다.", HttpStatus.FORBIDDEN),
+  TOKEN_INVALID("AUTH4007", "유효하지 않은 리프레시 토큰입니다.", HttpStatus.UNAUTHORIZED),
+  TOKEN_EXPIRED("AUTH4008", "리프레시 토큰이 만료되었습니다.", HttpStatus.UNAUTHORIZED),
+  TOKEN_FAIL("AUTH4009", "토큰 파싱 또는 추출에 실패했습니다.", HttpStatus.BAD_REQUEST),
 
   ;
 

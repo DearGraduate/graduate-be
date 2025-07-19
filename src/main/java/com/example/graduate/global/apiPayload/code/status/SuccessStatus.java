@@ -10,7 +10,11 @@ import org.springframework.http.HttpStatus;
 @AllArgsConstructor
 public enum SuccessStatus implements BaseCode {
 
-  SUCCESS_DELETE_USER("USER2003", "사용자 삭제 성공", HttpStatus.OK);
+  SUCCESS_DELETE_USER("USER2000", "사용자 삭제 성공", HttpStatus.OK),
+
+  SUCCESS_LOGIN("AUTH2100", "사용자 로그인 성공", HttpStatus.OK),
+
+  ;
 
   private final String code;
   private final String message;
