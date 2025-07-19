@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/auth/kakao")
+@RequestMapping("/api/auth/kakao")
 @RequiredArgsConstructor
 public class KakaoAuthController {
   private final KakaoOAuthService kakaoService;
