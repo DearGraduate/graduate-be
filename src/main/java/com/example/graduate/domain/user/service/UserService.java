@@ -6,7 +6,9 @@ import com.example.graduate.domain.user.entity.User;
 import com.example.graduate.domain.user.mapper.UserMapper;
 import com.example.graduate.domain.user.repository.UserRepository;
 import com.example.graduate.global.jwt.JwtUtil;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Service;
 import com.example.graduate.global.redis.RedisUtil;
 
@@ -19,7 +21,7 @@ public class UserService {
   private final RedisUtil redisUtil;
 
 
-  public TokenResponse loginOrRegister(KakaoUserInfo info) {
+  public TokenResponse loginOrRegister(KakaoUserInfo info, HttpServletResponse response) {
     User user = userRepository.findBySocialId(info.getId())
         .orElseGet(() -> userRepository.save(userMapper.toEntity(info)));
 
@@ -46,6 +48,17 @@ public class UserService {
         refresh,
         refreshExpirationMs / 1000
     );
-    return new TokenResponse(access, refresh);
+
+    // refreshToken을 HttpOnly 쿠키에 담아 클라이언트로 전송
+    ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", refresh)
+        .httpOnly(true)
+        .secure(false)
+        .path("/")
+        .maxAge(refreshExpirationMs / 1000)
+        .build();
+
+    response.addHeader("Set-Cookie", refreshCookie.toString());
+
+    return new TokenResponse(access);
   }
 }

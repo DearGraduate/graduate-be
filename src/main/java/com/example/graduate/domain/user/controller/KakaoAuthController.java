@@ -46,12 +46,12 @@ public class KakaoAuthController {
   @GetMapping("/callback")
   public ResponseEntity<TokenResponse> callback(
       @Parameter(description = "카카오 인가 코드", required = true)
-      @RequestParam("code") String code
-  ) {
+      @RequestParam("code") String code,
+      HttpServletResponse response) {
     try {
       String token = kakaoService.getAccessToken(code);
       var userInfo = kakaoService.getUserInfo(token);
-      TokenResponse tokens = userService.loginOrRegister(userInfo);
+      TokenResponse tokens = userService.loginOrRegister(userInfo, response);
       return ResponseEntity.ok(tokens);
 
     } catch (Exception e) {
