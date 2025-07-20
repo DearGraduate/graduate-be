@@ -5,6 +5,7 @@ import com.example.graduate.domain.user.entity.User;
 import com.example.graduate.domain.user.exception.UserErrorStatus;
 import com.example.graduate.domain.user.mapper.UserMapper;
 import com.example.graduate.domain.user.repository.UserRepository;
+import com.example.graduate.global.SecurityUtil;
 import com.example.graduate.global.apiPayload.exception.GeneralException;
 import com.example.graduate.global.jwt.JwtUtil;
 import com.example.graduate.global.security.CustomUserDetails;
@@ -24,6 +25,7 @@ public class UserService {
   private final UserMapper userMapper;
   private final JwtUtil jwtUtil;
   private final RedisUtil redisUtil;
+  private final SecurityUtil securityUtil;
 
   @Value("${cookie.secure}")
   private boolean secureCookie;
@@ -180,23 +182,16 @@ public class UserService {
   /**
    * 회원 탈퇴 처리: 사용자 정보를 삭제하고 RefreshToken을 제거합니다.
    *
-   * @param userDetails 인증된 사용자 정보 (CustomUserDetails에서 소셜 ID를 추출)
    * @param response 클라이언트에 만료된 refreshToken 쿠키를 전달하여 삭제 처리
    */
   public void delete(
-      CustomUserDetails userDetails,
       HttpServletResponse response) {
-    String socialId = userDetails.getSocialId();
+    User user = securityUtil.getCurrentUser();
+    String socialId = user.getSocialId();
 
-    // 사용자 존재 확인 및 삭제
-    User user = userRepository.findBySocialId(socialId)
-        .orElseThrow(() -> new GeneralException(UserErrorStatus.USER_NOT_FOUND));
     userRepository.delete(user);
-
-    // Redis refresh token 제거
     redisUtil.deleteData("refresh:" + socialId);
 
-    // refreshToken 쿠키 만료 처리
     ResponseCookie expiredCookie = ResponseCookie.from("refreshToken", "")
         .maxAge(0)
         .httpOnly(true)

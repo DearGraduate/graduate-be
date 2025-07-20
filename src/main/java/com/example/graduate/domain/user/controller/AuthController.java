@@ -46,10 +46,8 @@ public class AuthController {
       summary = "회원 탈퇴",
       description = "회원 탈퇴 처리 후 토큰 및 쿠키를 삭제합니다.")
   @PostMapping("/delete")
-  public ApiResponse<Void> delete(
-      @AuthenticationPrincipal CustomUserDetails userDetails,
-      HttpServletResponse response) {
-    userService.delete(userDetails, response);
+  public ApiResponse<Void> delete(HttpServletResponse response) {
+    userService.delete(response);
 
     return ApiResponse.of(UserSuccessStatus.SUCCESS_DELETE_USER);
   }
