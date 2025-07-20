@@ -1,13 +1,15 @@
 package com.example.graduate.domain.user.controller;
 
-import com.example.graduate.domain.user.dto.reponse.TokenResponse;
 import com.example.graduate.domain.user.service.KakaoOAuthService;
 import com.example.graduate.domain.user.service.UserService;
-import com.example.graduate.global.apiPayload.code.status.ErrorStatus;
+import com.example.graduate.domain.user.exception.UserErrorStatus;
+import com.example.graduate.domain.user.exception.UserSuccessStatus;
+import com.example.graduate.global.apiPayload.ApiResponse;
 import com.example.graduate.global.apiPayload.exception.GeneralException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.constraints.Null;
 import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -41,18 +43,21 @@ public class KakaoOAuthController {
       summary = "카카오 로그인 콜백",
       description = "인가 코드를 기반으로 카카오 사용자 정보를 받아 JWT 토큰을 발급합니다.")
   @GetMapping("/callback")
-  public ResponseEntity<TokenResponse> callback(
+  public ApiResponse<Null> callback(
       @Parameter(description = "카카오 인가 코드", required = true)
       @RequestParam("code") String code,
       HttpServletResponse response) {
     try {
       String token = kakaoService.getAccessToken(code);
       var userInfo = kakaoService.getUserInfo(token);
-      TokenResponse tokens = userService.loginOrRegister(userInfo, response);
-      return ResponseEntity.ok(tokens);
+
+      // accessToken은 응답 헤더로, refreshToken은 HttpOnly 쿠키로 전송
+      userService.loginOrRegister(userInfo, response);
+
+      return ApiResponse.of(UserSuccessStatus.SUCCESS_LOGIN);
 
     } catch (Exception e) {
-      throw new GeneralException(ErrorStatus.TOKEN_FAIL);
+      throw new GeneralException(UserErrorStatus.TOKEN_FAIL);
     }
   }
 }

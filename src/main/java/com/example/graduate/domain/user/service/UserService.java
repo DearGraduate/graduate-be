@@ -1,6 +1,5 @@
 package com.example.graduate.domain.user.service;
 
-import com.example.graduate.domain.user.dto.reponse.TokenResponse;
 import com.example.graduate.domain.user.dto.request.KakaoUserInfo;
 import com.example.graduate.domain.user.entity.User;
 import com.example.graduate.domain.user.mapper.UserMapper;
@@ -21,7 +20,7 @@ public class UserService {
   private final RedisUtil redisUtil;
 
 
-  public TokenResponse loginOrRegister(KakaoUserInfo info, HttpServletResponse response) {
+  public void loginOrRegister(KakaoUserInfo info, HttpServletResponse response) {
     User user = userRepository.findBySocialId(info.getId())
         .orElseGet(() -> userRepository.save(userMapper.toEntity(info)));
 
@@ -58,7 +57,6 @@ public class UserService {
         .build();
 
     response.addHeader("Set-Cookie", refreshCookie.toString());
-
-    return new TokenResponse(access);
+    response.addHeader("Authorization", "Bearer " + access);
   }
 }
