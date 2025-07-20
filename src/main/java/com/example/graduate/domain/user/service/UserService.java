@@ -7,6 +7,7 @@ import com.example.graduate.domain.user.mapper.UserMapper;
 import com.example.graduate.domain.user.repository.UserRepository;
 import com.example.graduate.global.apiPayload.exception.GeneralException;
 import com.example.graduate.global.jwt.JwtUtil;
+import com.example.graduate.global.security.CustomUserDetails;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
@@ -28,7 +29,7 @@ public class UserService {
   private boolean secureCookie;
 
   /**
-   * 카카오 사용자 정보를 기반으로 로그인 또는 회원가입을 처리하고 JWT를 발급합니다.
+   * 카카오 사용자 정보를 기반으로 로그인 또는 회원가입을 처리하고 JWT를 발급합니다. <hr>
    * AccessToken은 Authorization 헤더로, RefreshToken은 HttpOnly 쿠키로 반환됩니다.
    *
    * @param info     카카오 사용자 정보
@@ -167,6 +168,35 @@ public class UserService {
     String socialId = jwtUtil.getSocialId(refresh);
     redisUtil.deleteData("refresh:" + socialId);
 
+    ResponseCookie expiredCookie = ResponseCookie.from("refreshToken", "")
+        .maxAge(0)
+        .httpOnly(true)
+        .secure(secureCookie)
+        .path("/")
+        .build();
+    response.addHeader("Set-Cookie", expiredCookie.toString());
+  }
+
+  /**
+   * 회원 탈퇴 처리: 사용자 정보를 삭제하고 RefreshToken을 제거합니다.
+   *
+   * @param userDetails 인증된 사용자 정보 (CustomUserDetails에서 소셜 ID를 추출)
+   * @param response 클라이언트에 만료된 refreshToken 쿠키를 전달하여 삭제 처리
+   */
+  public void delete(
+      CustomUserDetails userDetails,
+      HttpServletResponse response) {
+    String socialId = userDetails.getSocialId();
+
+    // 사용자 존재 확인 및 삭제
+    User user = userRepository.findBySocialId(socialId)
+        .orElseThrow(() -> new GeneralException(UserErrorStatus.USER_NOT_FOUND));
+    userRepository.delete(user);
+
+    // Redis refresh token 제거
+    redisUtil.deleteData("refresh:" + socialId);
+
+    // refreshToken 쿠키 만료 처리
     ResponseCookie expiredCookie = ResponseCookie.from("refreshToken", "")
         .maxAge(0)
         .httpOnly(true)

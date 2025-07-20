@@ -3,11 +3,13 @@ package com.example.graduate.domain.user.controller;
 import com.example.graduate.domain.user.exception.UserSuccessStatus;
 import com.example.graduate.domain.user.service.UserService;
 import com.example.graduate.global.apiPayload.ApiResponse;
+import com.example.graduate.global.security.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -30,10 +32,25 @@ public class AuthController {
     return ApiResponse.of(UserSuccessStatus.SUCCESS_REISSUE);
   }
 
-  @Operation(summary = "로그아웃", description = "Refresh 토큰을 만료시켜 로그아웃 처리합니다.")
+  @Operation(
+      summary = "로그아웃",
+      description = "Refresh 토큰을 만료시켜 로그아웃 처리합니다.")
   @PostMapping("/logout")
   public ApiResponse<Void> logout(HttpServletRequest request, HttpServletResponse response) {
     userService.logout(request, response);
+
     return ApiResponse.of(UserSuccessStatus.SUCCESS_LOGOUT);
+  }
+
+  @Operation(
+      summary = "회원 탈퇴",
+      description = "회원 탈퇴 처리 후 토큰 및 쿠키를 삭제합니다.")
+  @PostMapping("/delete")
+  public ApiResponse<Void> delete(
+      @AuthenticationPrincipal CustomUserDetails userDetails,
+      HttpServletResponse response) {
+    userService.delete(userDetails, response);
+
+    return ApiResponse.of(UserSuccessStatus.SUCCESS_DELETE_USER);
   }
 }
