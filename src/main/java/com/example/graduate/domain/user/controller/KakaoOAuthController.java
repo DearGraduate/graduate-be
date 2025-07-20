@@ -1,15 +1,12 @@
 package com.example.graduate.domain.user.controller;
 
 import com.example.graduate.domain.user.dto.reponse.TokenResponse;
-import com.example.graduate.domain.user.dto.request.KakaoLoginRequest;
 import com.example.graduate.domain.user.service.KakaoOAuthService;
 import com.example.graduate.domain.user.service.UserService;
 import com.example.graduate.global.apiPayload.code.status.ErrorStatus;
 import com.example.graduate.global.apiPayload.exception.GeneralException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/auth/kakao")
 @RequiredArgsConstructor
-public class KakaoAuthController {
+public class KakaoOAuthController {
   private final KakaoOAuthService kakaoService;
   private final UserService userService;
 
