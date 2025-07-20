@@ -1,7 +1,7 @@
 package com.example.graduate.global.jwt;
 
 
-import com.example.graduate.global.apiPayload.code.status.ErrorStatus;
+import com.example.graduate.domain.user.exception.UserErrorStatus;
 import com.example.graduate.global.apiPayload.exception.GeneralException;
 import com.example.graduate.global.security.CustomUserDetails;
 import jakarta.servlet.FilterChain;
@@ -57,10 +57,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
       } catch (io.jsonwebtoken.ExpiredJwtException e) {
-        throw new GeneralException(ErrorStatus.TOKEN_EXPIRED);
+        throw new GeneralException(UserErrorStatus.TOKEN_EXPIRED);
 
       } catch (Exception e) {
-        throw new GeneralException(ErrorStatus.TOKEN_FAIL);
+        throw new GeneralException(UserErrorStatus.TOKEN_FAIL);
       }
     }
 
