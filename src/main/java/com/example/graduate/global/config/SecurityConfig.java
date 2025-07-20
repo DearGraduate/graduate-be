@@ -1,5 +1,6 @@
 package com.example.graduate.global.config;
 
+import com.example.graduate.global.jwt.JwtAuthenticationFilter;
 import com.example.graduate.global.jwt.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -8,11 +9,14 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @RequiredArgsConstructor
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+
+    private final JwtUtil jwtUtil;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception{
@@ -30,7 +34,9 @@ public class SecurityConfig {
                         .requestMatchers("/").permitAll()
                         .requestMatchers("/api/test/permit-all").permitAll()
                         .requestMatchers("/api/auth/kakao/**").permitAll()
-                        .anyRequest().authenticated());
+                        .anyRequest().authenticated())
+
+            .addFilterBefore(new JwtAuthenticationFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 
