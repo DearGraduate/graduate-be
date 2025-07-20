@@ -31,16 +31,16 @@ public class AlbumController {
                 .body(ApiResponse.of(AlbumSuccessStatus._CREATE_ALBUM_SUCCESS, result));
     }
 
-        @Operation(summary = "앨범 수정")
-        @PatchMapping
-        public ResponseEntity<ApiResponse<?>> updateAlbum (
-                @PathVariable Long userId,
-                @RequestBody AlbumRequestDTO dto){
-            albumService.updateAlbum(userId, dto);
-            return ResponseEntity
-                    .status(AlbumSuccessStatus._UPDATE_ALBUM_SUCCESS.getHttpStatus())
-                    .body(ApiResponse.of(AlbumSuccessStatus._UPDATE_ALBUM_SUCCESS));
-        }
+    @Operation(summary = "앨범 수정")
+    @PatchMapping
+    public ResponseEntity<ApiResponse<?>> updateAlbum (
+            @PathVariable Long userId,
+            @RequestBody AlbumRequestDTO dto){
+        albumService.updateAlbum(userId, dto);
+        return ResponseEntity
+                .status(AlbumSuccessStatus._UPDATE_ALBUM_SUCCESS.getHttpStatus())
+                .body(ApiResponse.of(AlbumSuccessStatus._UPDATE_ALBUM_SUCCESS));
+    }
 
 
     @Operation(summary = "앨범 삭제")
@@ -51,4 +51,16 @@ public class AlbumController {
                 .status(AlbumSuccessStatus._DELETE_ALBUM_SUCCESS.getHttpStatus())
                 .body(ApiResponse.of(AlbumSuccessStatus._DELETE_ALBUM_SUCCESS));
     }
+
+    @Operation(summary = "앨범 조회")
+    @GetMapping
+    public ResponseEntity<ApiResponse<AlbumResponseDTO>> getAlbum(
+            @PathVariable Long userId) {
+        AlbumResponseDTO album = albumService.getAlbum(userId);
+        return ResponseEntity
+                .status(AlbumSuccessStatus._GET_ALBUM_SUCCESS.getHttpStatus())
+                .body(ApiResponse.of(AlbumSuccessStatus._GET_ALBUM_SUCCESS, album));
+    }
+
+
 }

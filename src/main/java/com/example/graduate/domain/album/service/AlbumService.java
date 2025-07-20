@@ -40,6 +40,7 @@ public class AlbumService {
                 .albumName(album.getAlbumName())
                 .description(album.getDescription())
                 .graduationDate(album.getGraduationDate())
+                .createdAt(album.getCreatedAt())
                 .build();
     }
     @Transactional
@@ -57,4 +58,18 @@ public class AlbumService {
                 .orElseThrow(() -> new GeneralException(AlbumErrorStatus._ALBUM_NOT_FOUND));
         albumRepository.delete(album);
     }
+
+    public AlbumResponseDTO getAlbum(Long userId) {
+        Album album = albumRepository.findByuserId(userId)
+                .orElseThrow(() -> new GeneralException(AlbumErrorStatus._ALBUM_NOT_FOUND));
+
+        return AlbumResponseDTO.builder()
+                .id(album.getId())
+                .albumName(album.getAlbumName())
+                .description(album.getDescription())
+                .graduationDate(album.getGraduationDate())
+                .createdAt(album.getCreatedAt())
+                .build();
+    }
+
 }
