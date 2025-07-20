@@ -40,7 +40,7 @@ public class SwaggerConfig {
     public GroupedOpenApi publicApi() {
         return GroupedOpenApi.builder()
                 .group("Swagger API") // API 그룹명
-                .pathsToMatch("/api/**", "/swagger-ui/**", "/v3/api-docs/**", "/auth/**") // 해당 경로만 문서화
+                .pathsToMatch("/api/**", "/swagger-ui/**", "/v3/api-docs/**") // 해당 경로만 문서화
                 .build();
     }
 }
