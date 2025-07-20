@@ -1,4 +1,4 @@
-package com.example.graduate.global.apiPayload.code.status;
+package com.example.graduate.domain.user.exception;
 
 import com.example.graduate.global.apiPayload.code.BaseErrorCode;
 import com.example.graduate.global.apiPayload.dto.ErrorReasonDTO;
@@ -8,7 +8,7 @@ import org.springframework.http.HttpStatus;
 
 @Getter
 @AllArgsConstructor
-public enum ErrorStatus implements BaseErrorCode {
+public enum UserErrorStatus implements BaseErrorCode {
 
   // USER 관련 에러
   USER_NOT_FOUND("USER4001", "존재하지 않는 사용자입니다.", HttpStatus.NOT_FOUND),

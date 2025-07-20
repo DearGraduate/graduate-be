@@ -1,4 +1,4 @@
-package com.example.graduate.global.apiPayload.code.status;
+package com.example.graduate.domain.user.exception;
 
 import com.example.graduate.global.apiPayload.code.BaseCode;
 import com.example.graduate.global.apiPayload.dto.ReasonDTO;
@@ -8,7 +8,7 @@ import org.springframework.http.HttpStatus;
 
 @Getter
 @AllArgsConstructor
-public enum SuccessStatus implements BaseCode {
+public enum UserSuccessStatus implements BaseCode {
 
   SUCCESS_DELETE_USER("USER2000", "사용자 삭제 성공", HttpStatus.OK),
 
