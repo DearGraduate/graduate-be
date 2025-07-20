@@ -7,7 +7,6 @@ import lombok.*;
 import java.sql.Timestamp;
 
 @Getter
-@Setter
 @Entity
 @Table(name = "letter")
 @AllArgsConstructor
@@ -15,20 +14,23 @@ import java.sql.Timestamp;
 @Builder
 public class Letter extends BaseEntity {
 
-    //Long으로 해야 bigint
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Setter
     @Column(length = 10, nullable = false)
     private String writerName;
 
+    @Setter
     @Column(length = 1000, nullable = true)
     private String picUrl;
 
+    @Setter
     @Column(length = 300, nullable = false)
     private String message;
 
+    @Setter
     @Column
     private Boolean isPublic;
 
@@ -37,5 +39,4 @@ public class Letter extends BaseEntity {
 
     @Column
     private Long albumId;
-
 }

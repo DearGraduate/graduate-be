@@ -1,6 +1,7 @@
 package com.example.graduate.domain.letter.controller;
 
 import com.example.graduate.domain.letter.dto.LetterCreateRequestDTO;
+import com.example.graduate.domain.letter.dto.LetterResponseDTO;
 import com.example.graduate.domain.letter.dto.LetterUpdateRequestDTO;
 import com.example.graduate.domain.letter.service.LetterService;
 import com.example.graduate.global.apiPayload.ApiResponse;
@@ -10,9 +11,13 @@ import com.example.graduate.global.apiPayload.status.letter.LetterErrorStatus;
 import com.example.graduate.global.apiPayload.status.letter.LetterSuccessStatus;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -44,7 +49,6 @@ public class LetterController {
     }
 
     //축하글 수정
-    // 축하글 수정
     @PatchMapping("/letters/{letterId}")
     public ResponseEntity<ApiResponse<?>> updateLetter(
             @PathVariable Long letterId,
@@ -84,5 +88,13 @@ public class LetterController {
     }
 
     //축하글 가져오기
-    //@GetMapping("/letters")
+    @GetMapping("/letters")
+    public ResponseEntity<ApiResponse<?>> getLetters(
+            @RequestParam String limit,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime lastCreatedAt
+    ) {
+        List<LetterResponseDTO> result = letterService.getLetters(limit, lastCreatedAt);
+        return ResponseEntity.ok(ApiResponse.onSuccess(result));
+    }
+
 }

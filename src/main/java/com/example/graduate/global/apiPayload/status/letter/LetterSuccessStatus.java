@@ -11,7 +11,8 @@ public enum LetterSuccessStatus implements BaseCode{
     //_OK(HttpStatus.OK, "COMMON200", "성공입니다."); 예시
     CREATED(HttpStatus.CREATED, "LETTER201", "축하글이 생성되었습니다."),
     UPDATED(HttpStatus.OK, "LETTER202", "축하글이 수정되었습니다."),
-    DELETED(HttpStatus.OK, "DELETE202", "축하글이 삭제되었습니다.");
+    DELETED(HttpStatus.OK, "DELETE202", "축하글이 삭제되었습니다."),
+    READ_SUCCESS(HttpStatus.OK, "LETTER200", "축하글 목록 조회 성공");
 
     private final HttpStatus httpStatus;
     private final String code;

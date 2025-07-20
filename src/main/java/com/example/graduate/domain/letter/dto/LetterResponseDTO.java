@@ -1,0 +1,30 @@
+package com.example.graduate.domain.letter.dto;
+
+import com.example.graduate.domain.letter.domain.Letter;
+import lombok.Builder;
+import lombok.Getter;
+
+import java.time.LocalDateTime;
+
+@Getter
+@Builder
+public class LetterResponseDTO {
+    private Long id;
+    private String writerName;
+    private String picUrl;
+    private String message;
+    private Boolean isPublic;
+    private LocalDateTime createdAt;
+
+    public static LetterResponseDTO from(Letter letter) {
+        return LetterResponseDTO.builder()
+                .id(letter.getId())
+                .writerName(letter.getWriterName())
+                .picUrl(letter.getPicUrl())
+                .message(letter.getMessage())
+                .isPublic(letter.getIsPublic())
+                .createdAt(letter.getCreatedAt())
+                .build();
+    }
+
+}
