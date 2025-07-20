@@ -8,6 +8,7 @@ import com.example.graduate.global.apiPayload.ApiResponse;
 import com.example.graduate.global.apiPayload.exception.GeneralException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.constraints.Null;
 import java.io.IOException;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/auth/kakao")
 @RequiredArgsConstructor
+@Tag(name = "카카오 소셜 로그인 API", description = "카카오 회원가입 및 로그인 기능을 제공합니다.")
 public class KakaoOAuthController {
   private final KakaoOAuthService kakaoService;
   private final UserService userService;
