@@ -16,6 +16,8 @@ public enum UserSuccessStatus implements BaseCode {
 
   SUCCESS_REISSUE("AUTH2010", "Access Token 재발급 성공", HttpStatus.OK),
 
+  SUCCESS_LOGOUT("AUTH2015", "로그아웃 성공", HttpStatus.OK),
+
   ;
 
   private final String code;
