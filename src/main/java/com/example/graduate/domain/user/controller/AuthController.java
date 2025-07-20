@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/auth")
-@Tag(name = "Auth API", description = "JWT 인증, 재발급, 로그아웃, 탈퇴 관련 기능을 제공합니다.")
+@Tag(name = "사용자 인증 관련 API", description = "JWT 인증, 재발급, 로그아웃, 탈퇴 관련 기능을 제공합니다.")
 public class AuthController {
 
   private final UserService userService;
@@ -28,5 +28,12 @@ public class AuthController {
     userService.reissueToken(request, response);
 
     return ApiResponse.of(UserSuccessStatus.SUCCESS_REISSUE);
+  }
+
+  @Operation(summary = "로그아웃", description = "Refresh 토큰을 만료시켜 로그아웃 처리합니다.")
+  @PostMapping("/logout")
+  public ApiResponse<Void> logout(HttpServletRequest request, HttpServletResponse response) {
+    userService.logout(request, response);
+    return ApiResponse.of(UserSuccessStatus.SUCCESS_LOGOUT);
   }
 }

@@ -7,6 +7,7 @@ import com.example.graduate.domain.user.mapper.UserMapper;
 import com.example.graduate.domain.user.repository.UserRepository;
 import com.example.graduate.global.apiPayload.exception.GeneralException;
 import com.example.graduate.global.jwt.JwtUtil;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +27,13 @@ public class UserService {
   @Value("${cookie.secure}")
   private boolean secureCookie;
 
+  /**
+   * 카카오 사용자 정보를 기반으로 로그인 또는 회원가입을 처리하고 JWT를 발급합니다.
+   * AccessToken은 Authorization 헤더로, RefreshToken은 HttpOnly 쿠키로 반환됩니다.
+   *
+   * @param info     카카오 사용자 정보
+   * @param response 클라이언트에 토큰을 전달할 HttpServletResponse
+   */
   public void loginOrRegister(KakaoUserInfo info, HttpServletResponse response) {
     User user = userRepository.findBySocialId(info.getId())
         .orElseGet(() -> userRepository.save(userMapper.toEntity(info)));
@@ -60,6 +68,13 @@ public class UserService {
     response.addHeader("Authorization", "Bearer " + access);
   }
 
+  /**
+   * 클라이언트의 RefreshToken 쿠키를 기반으로 새로운 AccessToken과 RefreshToken을 발급합니다.
+   * 새 토큰은 Authorization 헤더 및 HttpOnly 쿠키로 반환됩니다.
+   *
+   * @param request  클라이언트 요청 (쿠키 포함)
+   * @param response 토큰을 전달할 HttpServletResponse
+   */
   public void reissueToken(HttpServletRequest request, HttpServletResponse response) {
     String refresh = null;
     jakarta.servlet.http.Cookie[] cookies = request.getCookies();
@@ -109,6 +124,14 @@ public class UserService {
     response.addHeader("Set-Cookie", refreshCookie.toString());
   }
 
+  /**
+   * 주어진 정보를 기반으로 HttpOnly RefreshToken 쿠키를 생성합니다.
+   *
+   * @param key     쿠키 키
+   * @param value   쿠키 값 (refresh token)
+   * @param maxAge  쿠키 유효 기간 (초 단위)
+   * @return 생성된 ResponseCookie
+   */
   private ResponseCookie createCookie(String key, String value, long maxAge) {
     return ResponseCookie.from(key, value)
         .httpOnly(true)
@@ -116,5 +139,40 @@ public class UserService {
         .path("/")
         .maxAge(maxAge)
         .build();
+  }
+
+  /**
+   * 로그아웃 처리: Redis에서 해당 사용자의 RefreshToken을 제거합니다.
+   *
+   * @param request 클라이언트 요청 (쿠키에서 refreshToken을 추출)
+   * @param response 클라이언트에 빈 쿠키를 전달하여 삭제 처리
+   */
+  public void logout(HttpServletRequest request, HttpServletResponse response) {
+    String refresh = null;
+    Cookie[] cookies = request.getCookies();
+
+    if (cookies != null) {
+      for (jakarta.servlet.http.Cookie cookie : cookies) {
+        if (cookie.getName().equals("refreshToken")) {
+          refresh = cookie.getValue();
+          break;
+        }
+      }
+    }
+
+    if (refresh == null) {
+      throw new GeneralException(UserErrorStatus.TOKEN_NOT_FOUND);
+    }
+
+    String socialId = jwtUtil.getSocialId(refresh);
+    redisUtil.deleteData("refresh:" + socialId);
+
+    ResponseCookie expiredCookie = ResponseCookie.from("refreshToken", "")
+        .maxAge(0)
+        .httpOnly(true)
+        .secure(secureCookie)
+        .path("/")
+        .build();
+    response.addHeader("Set-Cookie", expiredCookie.toString());
   }
 }
