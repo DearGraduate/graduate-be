@@ -7,6 +7,7 @@ import com.example.graduate.domain.user.repository.UserRepository;
 import com.example.graduate.global.jwt.JwtUtil;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Service;
 import com.example.graduate.global.redis.RedisUtil;
@@ -19,6 +20,8 @@ public class UserService {
   private final JwtUtil jwtUtil;
   private final RedisUtil redisUtil;
 
+  @Value("${cookie.secure}")
+  private boolean secureCookie;
 
   public void loginOrRegister(KakaoUserInfo info, HttpServletResponse response) {
     User user = userRepository.findBySocialId(info.getId())
@@ -51,7 +54,7 @@ public class UserService {
     // refreshToken을 HttpOnly 쿠키에 담아 클라이언트로 전송
     ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", refresh)
         .httpOnly(true)
-        .secure(false)
+        .secure(secureCookie)
         .path("/")
         .maxAge(refreshExpirationMs / 1000)
         .build();
