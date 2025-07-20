@@ -12,7 +12,9 @@ public enum UserSuccessStatus implements BaseCode {
 
   SUCCESS_DELETE_USER("USER2000", "사용자 삭제 성공", HttpStatus.OK),
 
-  SUCCESS_LOGIN("AUTH2100", "사용자 로그인 성공", HttpStatus.OK),
+  SUCCESS_LOGIN("AUTH2005", "사용자 로그인 성공", HttpStatus.OK),
+
+  SUCCESS_REISSUE("AUTH2010", "Access Token 재발급 성공", HttpStatus.OK),
 
   ;
 

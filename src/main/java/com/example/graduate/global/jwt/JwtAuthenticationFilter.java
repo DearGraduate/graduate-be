@@ -37,7 +37,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         // 2. 토큰 유효성 검사
         if (!jwtUtil.isExpired(token)) {
           // 3. 사용자 정보 추출
-          Long socialId = jwtUtil.getSocialId(token);
+          String socialId = jwtUtil.getSocialId(token);
           String name = jwtUtil.getName(token);
           String role = jwtUtil.getRole(token);
 

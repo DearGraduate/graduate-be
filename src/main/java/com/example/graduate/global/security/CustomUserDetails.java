@@ -9,11 +9,11 @@ import org.springframework.security.core.userdetails.UserDetails;
 @Getter
 public class CustomUserDetails implements UserDetails {
 
-  private final Long socialId;
+  private final String socialId;
   private final String name;
   private final String role;
 
-  public CustomUserDetails(Long socialId, String name, String role) {
+  public CustomUserDetails(String socialId, String name, String role) {
     this.socialId = socialId;
     this.name = name;
     this.role = role;
