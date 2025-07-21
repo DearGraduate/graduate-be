@@ -17,15 +17,15 @@ public class Album extends BaseEntity {
     private Long id;
 
     @Column(nullable = false)
-    private Date graduation_date;
+    private Date graduationDate;
 
     @Column(length = 5, nullable = false)
-    private String album_name;
+    private String albumName;
 
     @Column(length = 20, nullable = false)
     private String description;
 
     @Column(nullable = false)
-    private Long member_id;
+    private Long memberId;
 }
 

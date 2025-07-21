@@ -16,7 +16,7 @@ public class Member {
     private Long id;
 
     @Column(length = 50, nullable = false)
-    private String social_id;
+    private String socialId;
 
     @Column(length = 20, nullable = false)
     private String name;
@@ -25,8 +25,8 @@ public class Member {
     private String email;
 
     @Column(nullable = false)
-    private Timestamp create_at;
+    private Timestamp createAt;
 
     @Column(nullable = true)
-    private Timestamp update_at;
+    private Timestamp updateAt;
 }

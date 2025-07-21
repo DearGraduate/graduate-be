@@ -10,10 +10,12 @@ import com.example.graduate.global.apiPayload.dto.ReasonDTO;
 import com.example.graduate.global.apiPayload.status.letter.LetterErrorStatus;
 import com.example.graduate.global.apiPayload.status.letter.LetterSuccessStatus;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -22,6 +24,7 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api")
+@Validated //추가
 public class LetterController {
 
     private final LetterService letterService;
@@ -30,7 +33,7 @@ public class LetterController {
     @PostMapping("/albums/{albumId}/letter")
     public ResponseEntity<ApiResponse<?>> createLetter(
             @PathVariable Long albumId,
-            @RequestBody LetterCreateRequestDTO requestDTO
+            @RequestBody @Valid LetterCreateRequestDTO requestDTO
     ) {
         try {
             letterService.createLetter(albumId, requestDTO);
@@ -52,7 +55,7 @@ public class LetterController {
     @PatchMapping("/letters/{letterId}")
     public ResponseEntity<ApiResponse<?>> updateLetter(
             @PathVariable Long letterId,
-            @RequestBody LetterUpdateRequestDTO requestDTO
+            @RequestBody @Valid LetterUpdateRequestDTO requestDTO
     ) {
         try {
             letterService.updateLetter(letterId, requestDTO);
