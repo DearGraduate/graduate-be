@@ -4,6 +4,7 @@ import com.example.graduate.domain.album.domain.Album;
 import com.example.graduate.domain.album.repository.AlbumRepository;
 import com.example.graduate.domain.letter.domain.Letter;
 import com.example.graduate.domain.letter.dto.LetterCreateRequestDTO;
+import com.example.graduate.domain.letter.dto.LetterListResponseDTO;
 import com.example.graduate.domain.letter.dto.LetterResponseDTO;
 import com.example.graduate.domain.letter.dto.LetterUpdateRequestDTO;
 import com.example.graduate.domain.letter.repository.LetterRepository;
@@ -68,19 +69,26 @@ public class LetterService {
     }
 
     //축하글 가져오기
-    public List<LetterResponseDTO> getLetters(String limit, LocalDateTime lastCreatedAt) {
+    public LetterListResponseDTO getLetters(String limit, LocalDateTime lastUpdatedAt, Long lastLetterId) {
         int fetchCount = "all".equalsIgnoreCase(limit) ? Integer.MAX_VALUE : Integer.parseInt(limit);
         List<Letter> letters;
 
-        if (lastCreatedAt == null) {
-            letters = letterRepository.findTopByOrderByCreatedAtDesc(fetchCount);
+        if (lastUpdatedAt == null || lastLetterId == null) {
+            letters = letterRepository.findTopByOrderByUpdatedAtDesc(fetchCount);
         } else {
-            letters = letterRepository.findByCreatedAtBeforeOrderByCreatedAtDesc(lastCreatedAt, fetchCount);
+            letters = letterRepository.findByUpdatedAtAndIdBeforeOrderByUpdatedAtDesc(lastUpdatedAt, lastLetterId, fetchCount);
         }
 
-        return letters.stream()
+        List<LetterResponseDTO> content = letters.stream()
                 .map(LetterResponseDTO::from)
                 .collect(Collectors.toList());
+
+        boolean isLast = letters.size() < fetchCount;
+
+        return new LetterListResponseDTO(content, isLast);
     }
+
+
+
 
 }

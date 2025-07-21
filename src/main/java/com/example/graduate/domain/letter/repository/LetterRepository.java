@@ -13,21 +13,26 @@ import java.util.List;
 
 @Repository
 public interface LetterRepository extends JpaRepository<Letter, Long> {
-    @Query("SELECT l FROM Letter l ORDER BY l.createdAt DESC")
-    List<Letter> findTopByOrderByCreatedAtDesc(Pageable pageable);
+    @Query("SELECT l FROM Letter l ORDER BY COALESCE(l.updatedAt, l.createdAt) DESC, l.id DESC")
+    List<Letter> findTopByOrderByUpdatedAtDesc(Pageable pageable);
 
-    @Query("SELECT l FROM Letter l WHERE l.createdAt < :lastCreatedAt ORDER BY l.createdAt DESC")
-    List<Letter> findByCreatedAtBeforeOrderByCreatedAtDesc(
-            @Param("lastCreatedAt") LocalDateTime lastCreatedAt,
+    @Query("""
+    SELECT l FROM Letter l 
+    WHERE (COALESCE(l.updatedAt, l.createdAt) < :lastUpdatedAt)
+       OR (COALESCE(l.updatedAt, l.createdAt) = :lastUpdatedAt AND l.id < :lastLetterId)
+    ORDER BY COALESCE(l.updatedAt, l.createdAt) DESC, l.id DESC
+""")
+    List<Letter> findByUpdatedAtAndIdBeforeOrderByUpdatedAtDesc(
+            @Param("lastUpdatedAt") LocalDateTime lastUpdatedAt,
+            @Param("lastLetterId") Long lastLetterId,
             Pageable pageable
     );
 
-    // 서비스에서 사용하기 편하게 count만 넘기는 wrapper
-    default List<Letter> findTopByOrderByCreatedAtDesc(int limit) {
-        return findTopByOrderByCreatedAtDesc(PageRequest.of(0, limit));
+    default List<Letter> findTopByOrderByUpdatedAtDesc(int limit) {
+        return findTopByOrderByUpdatedAtDesc(PageRequest.of(0, limit));
     }
 
-    default List<Letter> findByCreatedAtBeforeOrderByCreatedAtDesc(LocalDateTime lastCreatedAt, int limit) {
-        return findByCreatedAtBeforeOrderByCreatedAtDesc(lastCreatedAt, PageRequest.of(0, limit));
+    default List<Letter> findByUpdatedAtAndIdBeforeOrderByUpdatedAtDesc(LocalDateTime lastUpdatedAt, Long lastLetterId, int limit) {
+        return findByUpdatedAtAndIdBeforeOrderByUpdatedAtDesc(lastUpdatedAt, lastLetterId, PageRequest.of(0, limit));
     }
 }

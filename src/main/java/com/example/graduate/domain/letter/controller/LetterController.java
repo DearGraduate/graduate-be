@@ -1,6 +1,7 @@
 package com.example.graduate.domain.letter.controller;
 
 import com.example.graduate.domain.letter.dto.LetterCreateRequestDTO;
+import com.example.graduate.domain.letter.dto.LetterListResponseDTO;
 import com.example.graduate.domain.letter.dto.LetterResponseDTO;
 import com.example.graduate.domain.letter.dto.LetterUpdateRequestDTO;
 import com.example.graduate.domain.letter.service.LetterService;
@@ -9,6 +10,8 @@ import com.example.graduate.global.apiPayload.dto.ErrorReasonDTO;
 import com.example.graduate.global.apiPayload.dto.ReasonDTO;
 import com.example.graduate.global.apiPayload.status.letter.LetterErrorStatus;
 import com.example.graduate.global.apiPayload.status.letter.LetterSuccessStatus;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +24,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Tag(name = "Letter", description = "축하글 API")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api")
@@ -30,6 +34,7 @@ public class LetterController {
     private final LetterService letterService;
 
     // 축하글 생성
+    @Operation(summary = "축하글 생성", description = "앨범 ID를 기반으로 축하글을 생성")
     @PostMapping("/albums/{albumId}/letter")
     public ResponseEntity<ApiResponse<?>> createLetter(
             @PathVariable Long albumId,
@@ -52,6 +57,7 @@ public class LetterController {
     }
 
     //축하글 수정
+    @Operation(summary = "축하글 생성", description = "축하글 ID를 통해 내용 수정")
     @PatchMapping("/letters/{letterId}")
     public ResponseEntity<ApiResponse<?>> updateLetter(
             @PathVariable Long letterId,
@@ -73,6 +79,7 @@ public class LetterController {
     }
 
     //축하글 삭제
+    @Operation(summary = "축하글 삭제", description = "축하글 ID를 통해 축하글 삭제")
     @DeleteMapping("/letters/{letterId}")
     public ResponseEntity<ApiResponse<?>> deleteLetter(@PathVariable Long letterId) {
         try {
@@ -91,13 +98,16 @@ public class LetterController {
     }
 
     //축하글 가져오기
+    @Operation(summary = "축하글 목록 조회", description = "updatedAt와 createdAt을 사용해 목록 조회")
     @GetMapping("/letters")
     public ResponseEntity<ApiResponse<?>> getLetters(
             @RequestParam String limit,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime lastCreatedAt
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime lastUpdatedAt,
+            @RequestParam(required = false) Long lastLetterId
     ) {
-        List<LetterResponseDTO> result = letterService.getLetters(limit, lastCreatedAt);
+        LetterListResponseDTO result = letterService.getLetters(limit, lastUpdatedAt, lastLetterId);
         return ResponseEntity.ok(ApiResponse.onSuccess(result));
     }
+
 
 }
