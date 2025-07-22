@@ -60,9 +60,13 @@ public class AlbumService {
         Album album = albumRepository.findByUserId(userId)
                 .orElseThrow(() -> new GeneralException(AlbumErrorStatus._ALBUM_NOT_FOUND));
 
+        if (dto.getAlbumName() == null || dto.getGraduationDate() == null) {
+            throw new GeneralException(AlbumErrorStatus._REQUIRED_FIELDS_MISSING); // ✨ 커스텀 상태코드 정의 필요
+        }
+
+        album.setGraduationDate(dto.getGraduationDate());
         album.setAlbumName(dto.getAlbumName());
         album.setDescription(dto.getDescription());
-        album.setGraduationDate(dto.getGraduationDate());
     }
 
     @Transactional
