@@ -32,6 +32,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests((auth) -> auth
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui/index.html").permitAll() // Swagger 관련 URL 허용
                         .requestMatchers("/").permitAll()
+                        .requestMatchers("/actuator/prometheus").permitAll()
                         .requestMatchers("/api/test/permit-all").permitAll()
                         .requestMatchers("/api/auth/kakao/**").permitAll()
                         .anyRequest().authenticated())
