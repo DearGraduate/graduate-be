@@ -19,13 +19,13 @@ import org.springframework.context.annotation.Configuration;
                 version = "v1",
                 contact = @Contact(
                         name = "졸업축하위원회",
-                        url = "http://localhost:3000"
+                        url = "https://photory.site"
                 )
         ),
         security = @SecurityRequirement(name = "bearerAuth"),
         servers = {
                 @Server(url = "http://localhost:8080", description = "로컬 서버"),
-                @Server(url = "https://api.도메인주소.com", description = "운영 서버")
+                @Server(url = "https://api.photory.site", description = "운영 서버")
         }
 )
 @SecurityScheme(
