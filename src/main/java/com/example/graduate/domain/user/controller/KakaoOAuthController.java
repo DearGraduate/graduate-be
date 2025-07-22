@@ -13,6 +13,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.constraints.Null;
 import java.io.IOException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.java.Log;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -51,6 +52,7 @@ public class KakaoOAuthController {
       HttpServletResponse response) {
     try {
       String token = kakaoService.getAccessToken(code);
+      System.out.print("토큰 있음"+ token);
       var userInfo = kakaoService.getUserInfo(token);
 
       // accessToken은 응답 헤더로, refreshToken은 HttpOnly 쿠키로 전송

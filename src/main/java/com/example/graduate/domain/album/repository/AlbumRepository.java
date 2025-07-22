@@ -10,8 +10,8 @@ import java.util.Optional;
 
 @Repository
 public interface AlbumRepository extends JpaRepository<Album, Long> {
-    Optional<Album> findByUserId(Long userId);
-    boolean existsByUserId(Long userId);
+    Optional<Album> findByUserId(String userId);
+    boolean existsByUserId(String userId);
     List<Album> findByGraduationDateBefore(LocalDate cutoffDate);
 
 }
