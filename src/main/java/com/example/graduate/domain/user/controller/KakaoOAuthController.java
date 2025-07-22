@@ -6,15 +6,9 @@ import com.example.graduate.domain.user.exception.UserErrorStatus;
 import com.example.graduate.domain.user.exception.UserSuccessStatus;
 import com.example.graduate.global.apiPayload.ApiResponse;
 import com.example.graduate.global.apiPayload.exception.GeneralException;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.validation.constraints.Null;
-import java.io.IOException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -27,17 +21,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class KakaoOAuthController {
   private final KakaoOAuthService kakaoService;
   private final UserService userService;
-
-  /**
-   * 카카오 로그인 페이지로 리다이렉트
-   */
-  @Operation(
-      summary = "카카오 로그인 페이지 리다이렉트",
-      description = "카카오 로그인 페이지로 리다이렉트합니다.")
-  @GetMapping
-  public void redirectToKakao(HttpServletResponse response) throws IOException {
-    response.sendRedirect(kakaoService.getAuthorizationUrl());
-  }
 
   /**
    * 카카오 인가 코드로 사용자 인증 및 JWT 발급 처리

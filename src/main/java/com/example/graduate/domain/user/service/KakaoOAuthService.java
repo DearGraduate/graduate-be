@@ -22,16 +22,6 @@ public class KakaoOAuthService {
   private final RestTemplate restTemplate;
 
   /**
-   * 카카오 인가 URI 생성
-   */
-  public String getAuthorizationUrl() {
-    return "https://kauth.kakao.com/oauth/authorize" +
-        "?response_type=code" +
-        "&client_id=" + props.getClientId() +
-        "&redirect_uri=" + props.getRedirectUri();
-  }
-
-  /**
    * 인가 코드로 Access Token 발급
    */
   public String getAccessToken(String code) throws Exception {
