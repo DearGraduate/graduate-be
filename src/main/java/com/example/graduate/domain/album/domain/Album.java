@@ -21,7 +21,7 @@ public class Album extends BaseEntity {
     private Long id;
 
     @Column(nullable = false, unique = true)
-    private String userId;
+    private Long userId;
 
     @Setter
     @Column(nullable = false)

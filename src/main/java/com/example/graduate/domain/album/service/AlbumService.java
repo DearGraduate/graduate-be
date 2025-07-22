@@ -21,20 +21,20 @@ public class AlbumService {
     private final UserRepository userRepository;
     private final SecurityUtil securityUtil;
 
-    private String getCurrentUserId() {
+    private Long getCurrentUserId() {
         User user = securityUtil.getCurrentUser();
-        return user.getSocialId();
+        return user.getId();
     }
 
     public AlbumResponseDTO createAlbum(AlbumRequestDTO dto) {
-        String userId = getCurrentUserId();
+        Long userId = getCurrentUserId();
 
         if (albumRepository.existsByUserId(userId)) {
             throw new GeneralException(AlbumErrorStatus._ALBUM_ALREADY_EXISTS);
         }
 
         // 유효성 검사용 (memberId 존재 여부 확인)
-        userRepository.findBySocialId(userId)
+        userRepository.findById(userId)
                 .orElseThrow(() -> new GeneralException(AlbumErrorStatus._MEMBER_NOT_FOUND));
 
         Album album = Album.builder()
@@ -55,7 +55,7 @@ public class AlbumService {
     }
     @Transactional
     public void updateAlbum(AlbumRequestDTO dto) {
-        String userId = getCurrentUserId();
+        Long userId = getCurrentUserId();
 
         Album album = albumRepository.findByUserId(userId)
                 .orElseThrow(() -> new GeneralException(AlbumErrorStatus._ALBUM_NOT_FOUND));
@@ -71,7 +71,7 @@ public class AlbumService {
 
     @Transactional
     public void deleteAlbum() {
-        String userId = getCurrentUserId();
+        Long userId = getCurrentUserId();
 
         Album album = albumRepository.findByUserId(userId)
                 .orElseThrow(() -> new GeneralException(AlbumErrorStatus._ALBUM_NOT_FOUND));
@@ -79,7 +79,7 @@ public class AlbumService {
     }
 
     public AlbumResponseDTO getAlbum() {
-        String userId = getCurrentUserId();
+        Long userId = getCurrentUserId();
 
         Album album = albumRepository.findByUserId(userId)
                 .orElseThrow(() -> new GeneralException(AlbumErrorStatus._ALBUM_NOT_FOUND));
