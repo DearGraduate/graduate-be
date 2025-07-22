@@ -8,9 +8,7 @@ import lombok.*;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "album", uniqueConstraints = {
-        @UniqueConstraint(columnNames = "member_id")
-})
+@Table(name = "album")
 @Getter
 @Setter
 @Builder
@@ -22,15 +20,18 @@ public class Album extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private Long userId;
 
+    @Setter
     @Column(nullable = false)
     private LocalDate graduationDate;
 
+    @Setter
     @Column(length = 5)
     private String albumName;
 
+    @Setter
     @Column(length = 20)
     private String description;
 }

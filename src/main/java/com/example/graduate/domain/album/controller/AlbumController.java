@@ -4,13 +4,13 @@ import com.example.graduate.domain.album.dto.AlbumRequestDTO;
 import com.example.graduate.domain.album.dto.AlbumResponseDTO;
 import com.example.graduate.domain.album.service.AlbumService;
 import com.example.graduate.global.apiPayload.ApiResponse;
-import com.example.graduate.global.apiPayload.status.album.AlbumSuccessStatus;
+import com.example.graduate.domain.album.status.AlbumSuccessStatus;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/albums/{userId}")
@@ -24,7 +24,7 @@ public class AlbumController {
     @PostMapping
     public ResponseEntity<ApiResponse<?>> createAlbum(
             @PathVariable Long userId,
-            @RequestBody AlbumRequestDTO dto) {
+            @Valid @RequestBody AlbumRequestDTO dto) {
         AlbumResponseDTO result = albumService.createAlbum(userId, dto);
         return ResponseEntity
                 .status(AlbumSuccessStatus._CREATE_ALBUM_SUCCESS.getHttpStatus())
@@ -35,7 +35,7 @@ public class AlbumController {
     @PatchMapping
     public ResponseEntity<ApiResponse<?>> updateAlbum (
             @PathVariable Long userId,
-            @RequestBody AlbumRequestDTO dto){
+            @Valid @RequestBody AlbumRequestDTO dto){
         albumService.updateAlbum(userId, dto);
         return ResponseEntity
                 .status(AlbumSuccessStatus._UPDATE_ALBUM_SUCCESS.getHttpStatus())

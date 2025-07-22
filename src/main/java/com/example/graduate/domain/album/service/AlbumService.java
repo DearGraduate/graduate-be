@@ -6,7 +6,7 @@ import com.example.graduate.domain.album.dto.AlbumResponseDTO;
 import com.example.graduate.domain.album.repository.AlbumRepository;
 import com.example.graduate.domain.member.repository.MemberRepository;
 import com.example.graduate.global.apiPayload.exception.GeneralException;
-import com.example.graduate.global.apiPayload.status.album.AlbumErrorStatus;
+import com.example.graduate.domain.album.status.AlbumErrorStatus;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -19,7 +19,7 @@ public class AlbumService {
     private final MemberRepository memberRepository;
 
     public AlbumResponseDTO createAlbum(Long userId, AlbumRequestDTO dto) {
-        if (albumRepository.existsByuserId(userId)) {
+        if (albumRepository.existsByUserId(userId)) {
             throw new GeneralException(AlbumErrorStatus._ALBUM_ALREADY_EXISTS);
         }
 
@@ -45,7 +45,7 @@ public class AlbumService {
     }
     @Transactional
     public void updateAlbum(Long userId, AlbumRequestDTO dto) {
-        Album album = albumRepository.findByuserId(userId)
+        Album album = albumRepository.findByUserId(userId)
                 .orElseThrow(() -> new GeneralException(AlbumErrorStatus._ALBUM_NOT_FOUND));
 
         album.setAlbumName(dto.getAlbumName());
@@ -53,14 +53,15 @@ public class AlbumService {
         album.setGraduationDate(dto.getGraduationDate());
     }
 
+    @Transactional
     public void deleteAlbum(Long userId) {
-        Album album = albumRepository.findByuserId(userId)
+        Album album = albumRepository.findByUserId(userId)
                 .orElseThrow(() -> new GeneralException(AlbumErrorStatus._ALBUM_NOT_FOUND));
         albumRepository.delete(album);
     }
 
     public AlbumResponseDTO getAlbum(Long userId) {
-        Album album = albumRepository.findByuserId(userId)
+        Album album = albumRepository.findByUserId(userId)
                 .orElseThrow(() -> new GeneralException(AlbumErrorStatus._ALBUM_NOT_FOUND));
 
         return AlbumResponseDTO.builder()

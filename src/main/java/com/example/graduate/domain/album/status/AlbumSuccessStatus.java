@@ -1,4 +1,4 @@
-package com.example.graduate.global.apiPayload.status.album;
+package com.example.graduate.domain.album.status;
 
 import com.example.graduate.global.apiPayload.code.BaseCode;
 import com.example.graduate.global.apiPayload.dto.ReasonDTO;
