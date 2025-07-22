@@ -18,7 +18,9 @@ public class CorsConfig {
                 "http://localhost:5173",
                 "http://localhost:3000",
                 "http://photory.site",
-                "https://photory.site"));
+                "https://photory.site",
+                "http://api.photory.site",
+                "https://api.photory.site"));
         config.addAllowedHeader("*"); // 모든 헤더 허용
         config.addAllowedMethod("*"); // GET, POST, PUT, DELETE 등 모든 메서드 허용
 
