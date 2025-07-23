@@ -4,7 +4,9 @@ import com.example.graduate.domain.album.domain.Album;
 import com.example.graduate.domain.album.dto.AlbumRequestDTO;
 import com.example.graduate.domain.album.dto.AlbumResponseDTO;
 import com.example.graduate.domain.album.repository.AlbumRepository;
-import com.example.graduate.domain.member.repository.MemberRepository;
+import com.example.graduate.domain.user.entity.User;
+import com.example.graduate.domain.user.repository.UserRepository;
+import com.example.graduate.global.SecurityUtil;
 import com.example.graduate.global.apiPayload.exception.GeneralException;
 import com.example.graduate.domain.album.status.AlbumErrorStatus;
 import jakarta.transaction.Transactional;
@@ -16,15 +18,23 @@ import org.springframework.stereotype.Service;
 public class AlbumService {
 
     private final AlbumRepository albumRepository;
-    private final MemberRepository memberRepository;
+    private final UserRepository userRepository;
+    private final SecurityUtil securityUtil;
 
-    public AlbumResponseDTO createAlbum(Long userId, AlbumRequestDTO dto) {
+    private Long getCurrentUserId() {
+        User user = securityUtil.getCurrentUser();
+        return user.getId();
+    }
+
+    public AlbumResponseDTO createAlbum(AlbumRequestDTO dto) {
+        Long userId = getCurrentUserId();
+
         if (albumRepository.existsByUserId(userId)) {
             throw new GeneralException(AlbumErrorStatus._ALBUM_ALREADY_EXISTS);
         }
 
         // 유효성 검사용 (memberId 존재 여부 확인)
-        memberRepository.findById(userId)
+        userRepository.findById(userId)
                 .orElseThrow(() -> new GeneralException(AlbumErrorStatus._MEMBER_NOT_FOUND));
 
         Album album = Album.builder()
@@ -44,23 +54,33 @@ public class AlbumService {
                 .build();
     }
     @Transactional
-    public void updateAlbum(Long userId, AlbumRequestDTO dto) {
+    public void updateAlbum(AlbumRequestDTO dto) {
+        Long userId = getCurrentUserId();
+
         Album album = albumRepository.findByUserId(userId)
                 .orElseThrow(() -> new GeneralException(AlbumErrorStatus._ALBUM_NOT_FOUND));
 
+        if (dto.getAlbumName() == null || dto.getGraduationDate() == null) {
+            throw new GeneralException(AlbumErrorStatus._REQUIRED_FIELDS_MISSING); // ✨ 커스텀 상태코드 정의 필요
+        }
+
+        album.setGraduationDate(dto.getGraduationDate());
         album.setAlbumName(dto.getAlbumName());
         album.setDescription(dto.getDescription());
-        album.setGraduationDate(dto.getGraduationDate());
     }
 
     @Transactional
-    public void deleteAlbum(Long userId) {
+    public void deleteAlbum() {
+        Long userId = getCurrentUserId();
+
         Album album = albumRepository.findByUserId(userId)
                 .orElseThrow(() -> new GeneralException(AlbumErrorStatus._ALBUM_NOT_FOUND));
         albumRepository.delete(album);
     }
 
-    public AlbumResponseDTO getAlbum(Long userId) {
+    public AlbumResponseDTO getAlbum() {
+        Long userId = getCurrentUserId();
+
         Album album = albumRepository.findByUserId(userId)
                 .orElseThrow(() -> new GeneralException(AlbumErrorStatus._ALBUM_NOT_FOUND));
 
