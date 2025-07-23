@@ -1,6 +1,5 @@
 package com.example.graduate.domain.member.domain;
 
-
 import jakarta.persistence.*;
 import lombok.Getter;
 
@@ -16,7 +15,7 @@ public class Member {
     private Long id;
 
     @Column(length = 50, nullable = false)
-    private String socialId;
+    private String social_id;
 
     @Column(length = 20, nullable = false)
     private String name;
@@ -25,8 +24,8 @@ public class Member {
     private String email;
 
     @Column(nullable = false)
-    private Timestamp createAt;
+    private Timestamp created_at;
 
     @Column(nullable = true)
-    private Timestamp updateAt;
+    private Timestamp updated_at;
 }

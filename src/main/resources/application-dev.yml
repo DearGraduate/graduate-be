@@ -1,6 +1,8 @@
 server:
   port: 8080
 spring:
+  jackson:
+    time-zone: Asia/Seoul
   #env
   config:
     import: optional:file:.env[.properties]
@@ -42,3 +44,15 @@ oauth:
 
 cookie:
   secure: false
+
+cloud:
+  aws:
+    s3:
+      bucket: umc-5th
+    region:
+      static: ap-northeast-2
+    stack:
+      auto: false
+    credentials:
+      accessKey: ${AWS_ACCESS_KEY_ID}
+      secretKey: ${AWS_SECRET_ACCESS_KEY}
