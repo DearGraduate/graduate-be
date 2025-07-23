@@ -1,31 +1,38 @@
 package com.example.graduate.domain.album.domain;
 
+import ch.qos.logback.core.Layout;
 import com.example.graduate.global.common.BaseEntity;
 import jakarta.persistence.*;
-import lombok.Getter;
+import lombok.*;
 
-import java.sql.Date;
-import java.sql.Timestamp;
+import java.time.LocalDate;
 
-@Getter
 @Entity
 @Table(name = "album")
+@Getter
+@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Album extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private Date graduationDate;
+    @Column(nullable = false, unique = true)
+    private Long userId;
 
-    @Column(length = 5, nullable = false)
+    @Setter
+    @Column(nullable = false)
+    private LocalDate graduationDate;
+
+    @Setter
+    @Column(length = 5)
     private String albumName;
 
-    @Column(length = 20, nullable = false)
+    @Setter
+    @Column(length = 20)
     private String description;
-
-    @Column(nullable = false)
-    private Long memberId;
 }
 
