@@ -8,14 +8,21 @@ import com.example.graduate.domain.letter.dto.LetterListResponseDTO;
 import com.example.graduate.domain.letter.dto.LetterResponseDTO;
 import com.example.graduate.domain.letter.dto.LetterUpdateRequestDTO;
 import com.example.graduate.domain.letter.repository.LetterRepository;
+import com.example.graduate.domain.user.entity.User;
+import com.example.graduate.global.SecurityUtil;
 import com.example.graduate.global.apiPayload.exception.GeneralException;
 import com.example.graduate.global.apiPayload.status.letter.LetterErrorStatus;
+import com.example.graduate.global.aws.s3.AmazonS3Manager;
+import com.example.graduate.global.aws.s3.Uuid;
+import com.example.graduate.global.aws.s3.UuidRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -24,17 +31,44 @@ public class LetterService {
 
     private final LetterRepository letterRepository;
     private final AlbumRepository albumRepository;
+    private final SecurityUtil securityUtil;
 
-    public void createLetter(Long albumId, LetterCreateRequestDTO requestDTO){
+    //s3 관련 코드 추가
+    private final AmazonS3Manager amazonS3Manager;
+    private final UuidRepository uuidRepository;
+
+    private Long getCurrentUserId() {
+        return securityUtil.getCurrentUser().getId();
+    }
+
+    public void createLetter(Long albumId, LetterCreateRequestDTO requestDTO, MultipartFile file){
         albumRepository.findById(albumId)
                 .orElseThrow(() -> new GeneralException(LetterErrorStatus.ALBUM_NOT_FOUND));
 
+        String picUrl = null;
+
+        // 파일이 있으면 UUID 생성 + S3 업로드 + URL 추출
+        if (file != null && !file.isEmpty()) {
+            Uuid savedUuid = uuidRepository.save(
+                    Uuid.builder()
+                            .uuid(UUID.randomUUID().toString())
+                            .build()
+            );
+
+            String keyName = amazonS3Manager.generateLetterKeyName(savedUuid);
+            picUrl = amazonS3Manager.uploadFile(keyName, file);
+        }
+
+        //추가
+        Long userId = getCurrentUserId();
+
         Letter letter = Letter.builder()
                 .writerName(requestDTO.getWriterName())
-                .picUrl(requestDTO.getPicUrl())
                 .message(requestDTO.getMessage())
                 .isPublic(requestDTO.getIsPublic())
                 .albumId(albumId)
+                .picUrl(picUrl)
+                .userId(userId)
                 .build();
         letterRepository.save(letter);
     }
@@ -43,6 +77,10 @@ public class LetterService {
     public void updateLetter(Long letterId, LetterUpdateRequestDTO requestDTO){
         Letter letter = letterRepository.findById(letterId)
                 .orElseThrow(() -> new GeneralException(LetterErrorStatus.LETTER_NOT_FOUND));
+
+        if (!letter.getUserId().equals(getCurrentUserId())) {
+            throw new GeneralException(LetterErrorStatus.NOT_OWNER_OF_LETTER);
+        }
 
         if (requestDTO.getWriterName() != null) {
             letter.setWriterName(requestDTO.getWriterName());
@@ -65,6 +103,10 @@ public class LetterService {
         Letter letter = letterRepository.findById(letterId)
                 .orElseThrow(() -> new GeneralException(LetterErrorStatus.LETTER_NOT_FOUND));
 
+        if (!letter.getUserId().equals(getCurrentUserId())) {
+            throw new GeneralException(LetterErrorStatus.NOT_OWNER_OF_LETTER);
+        }
+
         letterRepository.delete(letter);
     }
 
@@ -73,17 +115,24 @@ public class LetterService {
         int fetchCount = "all".equalsIgnoreCase(limit) ? Integer.MAX_VALUE : Integer.parseInt(limit);
         List<Letter> letters;
 
+        // fetchCount + 1로 조회해서 다음 페이지 존재 여부 확인
+        int queryCount = fetchCount + 1;
+
         if (lastUpdatedAt == null || lastLetterId == null) {
-            letters = letterRepository.findTopByOrderByUpdatedAtDesc(fetchCount);
+            letters = letterRepository.findTopByOrderByUpdatedAtDesc(queryCount);
         } else {
-            letters = letterRepository.findByUpdatedAtAndIdBeforeOrderByUpdatedAtDesc(lastUpdatedAt, lastLetterId, fetchCount);
+            letters = letterRepository.findByUpdatedAtAndIdBeforeOrderByUpdatedAtDesc(lastUpdatedAt, lastLetterId, queryCount);
+        }
+
+        boolean isLast = letters.size() <= fetchCount;
+        // fetchCount까지만 자름
+        if (!isLast) {
+            letters = letters.subList(0, fetchCount);
         }
 
         List<LetterResponseDTO> content = letters.stream()
                 .map(LetterResponseDTO::from)
                 .collect(Collectors.toList());
-
-        boolean isLast = letters.size() < fetchCount;
 
         return new LetterListResponseDTO(content, isLast);
     }

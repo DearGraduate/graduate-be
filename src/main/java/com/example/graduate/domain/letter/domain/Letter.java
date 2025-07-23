@@ -16,7 +16,7 @@ public class Letter extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long letterId;
 
     @Setter
     @Column(length = 10, nullable = false)
@@ -34,9 +34,9 @@ public class Letter extends BaseEntity {
     @Column
     private Boolean isPublic;
 
-    @Column
-    private Long memberId;
+    @Column(nullable = false)
+    private Long userId;
 
-    @Column
+    @Column(nullable = false)
     private Long albumId;
 }

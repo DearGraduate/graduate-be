@@ -14,7 +14,7 @@ import java.io.IOException;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-//S3에 업로드하고 URL을 리턴하는 메서드 입니당..
+//S3에 업로드하고 URL을 리턴하는 메서드 입니다
 public class AmazonS3Manager {
 
     private final AmazonS3 amazonS3;
@@ -23,15 +23,21 @@ public class AmazonS3Manager {
 
     private final UuidRepository uuidRepository;
 
+    //실제 S3에 파일 업로드
     public String uploadFile(String keyName, MultipartFile file){
         ObjectMetadata metadata = new ObjectMetadata();
         metadata.setContentLength(file.getSize());
         try {
-            amazonS3.putObject(new PutObjectRequest(amazonConfig.getBucket(), keyName, file.getInputStream(), metadata));
+            amazonS3.putObject(new PutObjectRequest(
+                    amazonConfig.getBucket(), keyName, file.getInputStream(), metadata));
         } catch (IOException e){
             log.error("error at AmazonS3Manager uploadFile : {}", (Object) e.getStackTrace());
         }
 
         return amazonS3.getUrl(amazonConfig.getBucket(), keyName).toString();
+    }
+
+    public String generateLetterKeyName(Uuid uuid){
+        return amazonConfig.getLetterPath() + "/" + uuid.getUuid();
     }
 }

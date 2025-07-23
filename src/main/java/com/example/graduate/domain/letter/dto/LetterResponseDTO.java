@@ -18,7 +18,7 @@ public class LetterResponseDTO {
 
     public static LetterResponseDTO from(Letter letter) {
         return LetterResponseDTO.builder()
-                .id(letter.getId())
+                .id(letter.getUserId())
                 .writerName(letter.getWriterName())
                 .picUrl(letter.getPicUrl())
                 .message(letter.getMessage())

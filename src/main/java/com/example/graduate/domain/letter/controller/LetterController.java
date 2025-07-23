@@ -17,9 +17,11 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -35,13 +37,14 @@ public class LetterController {
 
     // 축하글 생성
     @Operation(summary = "축하글 생성", description = "앨범 ID를 기반으로 축하글을 생성")
-    @PostMapping("/albums/{albumId}/letter")
+    @PostMapping(value = "/albums/{albumId}/letter", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse<?>> createLetter(
             @PathVariable Long albumId,
-            @RequestBody @Valid LetterCreateRequestDTO requestDTO
+            @RequestPart("data") @Valid LetterCreateRequestDTO requestDTO,
+            @RequestPart(value = "file", required = false) MultipartFile file
     ) {
         try {
-            letterService.createLetter(albumId, requestDTO);
+            letterService.createLetter(albumId, requestDTO, file);
             return ResponseEntity
                     .status(LetterSuccessStatus.CREATED.getHttpStatus())
                     .body(ApiResponse.of(LetterSuccessStatus.CREATED));
