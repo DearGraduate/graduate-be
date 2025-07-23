@@ -32,7 +32,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests((auth) -> auth
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui/index.html").permitAll() // Swagger 관련 URL 허용
                         .requestMatchers("/").permitAll()
-                        .requestMatchers("/api/letters/**").permitAll()          // ✨ letter API 허용
+                        .requestMatchers("/api/letters/**").permitAll()          //letter API 허용
                         .requestMatchers("/api/albums/**").permitAll()
                         .requestMatchers("/api/test/permit-all").permitAll()
                         .requestMatchers("/api/auth/kakao/**").permitAll()
