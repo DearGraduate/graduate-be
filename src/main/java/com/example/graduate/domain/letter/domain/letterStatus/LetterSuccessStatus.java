@@ -1,4 +1,4 @@
-package com.example.graduate.global.apiPayload.status.letter;
+package com.example.graduate.domain.letter.domain.letterStatus;
 
 import com.example.graduate.global.apiPayload.code.BaseCode;
 import com.example.graduate.global.apiPayload.dto.ReasonDTO;

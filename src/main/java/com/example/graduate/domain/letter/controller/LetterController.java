@@ -2,21 +2,17 @@ package com.example.graduate.domain.letter.controller;
 
 import com.example.graduate.domain.letter.dto.LetterCreateRequestDTO;
 import com.example.graduate.domain.letter.dto.LetterListResponseDTO;
-import com.example.graduate.domain.letter.dto.LetterResponseDTO;
 import com.example.graduate.domain.letter.dto.LetterUpdateRequestDTO;
 import com.example.graduate.domain.letter.service.LetterService;
 import com.example.graduate.global.apiPayload.ApiResponse;
-import com.example.graduate.global.apiPayload.dto.ErrorReasonDTO;
-import com.example.graduate.global.apiPayload.dto.ReasonDTO;
-import com.example.graduate.global.apiPayload.status.letter.LetterErrorStatus;
-import com.example.graduate.global.apiPayload.status.letter.LetterSuccessStatus;
+import com.example.graduate.domain.letter.domain.letterStatus.LetterErrorStatus;
+import com.example.graduate.domain.letter.domain.letterStatus.LetterSuccessStatus;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -24,7 +20,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Tag(name = "Letter", description = "축하글 API")
 @RestController

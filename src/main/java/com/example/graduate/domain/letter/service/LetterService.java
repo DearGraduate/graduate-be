@@ -1,6 +1,5 @@
 package com.example.graduate.domain.letter.service;
 
-import com.example.graduate.domain.album.domain.Album;
 import com.example.graduate.domain.album.repository.AlbumRepository;
 import com.example.graduate.domain.letter.domain.Letter;
 import com.example.graduate.domain.letter.dto.LetterCreateRequestDTO;
@@ -8,14 +7,12 @@ import com.example.graduate.domain.letter.dto.LetterListResponseDTO;
 import com.example.graduate.domain.letter.dto.LetterResponseDTO;
 import com.example.graduate.domain.letter.dto.LetterUpdateRequestDTO;
 import com.example.graduate.domain.letter.repository.LetterRepository;
-import com.example.graduate.domain.user.entity.User;
 import com.example.graduate.global.SecurityUtil;
 import com.example.graduate.global.apiPayload.exception.GeneralException;
-import com.example.graduate.global.apiPayload.status.letter.LetterErrorStatus;
+import com.example.graduate.domain.letter.domain.letterStatus.LetterErrorStatus;
 import com.example.graduate.global.aws.s3.AmazonS3Manager;
 import com.example.graduate.global.aws.s3.Uuid;
 import com.example.graduate.global.aws.s3.UuidRepository;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
