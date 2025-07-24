@@ -13,6 +13,7 @@ import com.example.graduate.domain.letter.domain.letterStatus.LetterErrorStatus;
 import com.example.graduate.global.aws.s3.AmazonS3Manager;
 import com.example.graduate.global.aws.s3.Uuid;
 import com.example.graduate.global.aws.s3.UuidRepository;
+import com.example.graduate.global.redis.RedisUtil;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.annotation.Id;
@@ -31,6 +32,7 @@ public class LetterService {
     private final LetterRepository letterRepository;
     private final AlbumRepository albumRepository;
     private final SecurityUtil securityUtil;
+    private final RedisUtil redisUtil;
 
     //s3 관련 코드 추가
     private final AmazonS3Manager amazonS3Manager;
@@ -71,6 +73,7 @@ public class LetterService {
                 .userId(userId)
                 .build();
         letterRepository.save(letter);
+        redisUtil.increment("project:letter:count");
     }
 
     //축하글 수정
