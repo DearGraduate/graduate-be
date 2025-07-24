@@ -132,8 +132,6 @@ public class LetterService {
     public LetterListResponseDTO getLetters(String limit, LocalDateTime lastUpdatedAt, Long lastLetterId) {
         int fetchCount = "all".equalsIgnoreCase(limit) ? Integer.MAX_VALUE : Integer.parseInt(limit);
         List<Letter> letters;
-
-        // fetchCount + 1로 조회해서 다음 페이지 존재 여부 확인
         int queryCount = fetchCount + 1;
 
         if (lastUpdatedAt == null || lastLetterId == null) {
@@ -143,7 +141,6 @@ public class LetterService {
         }
 
         boolean isLast = letters.size() <= fetchCount;
-        // fetchCount까지만 자름
         if (!isLast) {
             letters = letters.subList(0, fetchCount);
         }
@@ -152,8 +149,12 @@ public class LetterService {
                 .map(LetterResponseDTO::from)
                 .collect(Collectors.toList());
 
-        return new LetterListResponseDTO(content, isLast);
+        Long nextLastLetterId = content.isEmpty() ? null : content.get(content.size() - 1).getId();
+        LocalDateTime nextLastUpdatedAt = content.isEmpty() ? null : content.get(content.size() - 1).getCreatedAt();
+
+        return new LetterListResponseDTO(content, isLast, nextLastLetterId, nextLastUpdatedAt);
     }
+
 
 
 
