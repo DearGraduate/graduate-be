@@ -55,14 +55,15 @@ public class LetterController {
     }
 
     //축하글 수정
-    @Operation(summary = "축하글 생성", description = "축하글 ID를 통해 내용 수정")
-    @PatchMapping("/letters/{letterId}")
+    @Operation(summary = "축하글 수정", description = "축하글 ID를 통해 내용 수정")
+    @PatchMapping(value = "/letters/{letterId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse<?>> updateLetter(
             @PathVariable Long letterId,
-            @RequestBody @Valid LetterUpdateRequestDTO requestDTO
+            @RequestPart("data") @Valid LetterUpdateRequestDTO requestDTO,
+            @RequestPart(value = "file", required = false) MultipartFile file
     ) {
         try {
-            letterService.updateLetter(letterId, requestDTO);
+            letterService.updateLetter(letterId, requestDTO, file);
             return ResponseEntity
                     .ok(ApiResponse.of(LetterSuccessStatus.UPDATED));
         } catch (EntityNotFoundException e) {
@@ -75,6 +76,7 @@ public class LetterController {
                     ));
         }
     }
+
 
     //축하글 삭제
     @Operation(summary = "축하글 삭제", description = "축하글 ID를 통해 축하글 삭제")

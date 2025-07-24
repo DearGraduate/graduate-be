@@ -13,7 +13,9 @@ import com.example.graduate.domain.letter.domain.letterStatus.LetterErrorStatus;
 import com.example.graduate.global.aws.s3.AmazonS3Manager;
 import com.example.graduate.global.aws.s3.Uuid;
 import com.example.graduate.global.aws.s3.UuidRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.annotation.Id;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -38,6 +40,7 @@ public class LetterService {
         return securityUtil.getCurrentUser().getId();
     }
 
+    @Transactional
     public void createLetter(Long albumId, LetterCreateRequestDTO requestDTO, MultipartFile file){
         albumRepository.findById(albumId)
                 .orElseThrow(() -> new GeneralException(LetterErrorStatus.ALBUM_NOT_FOUND));
@@ -71,7 +74,8 @@ public class LetterService {
     }
 
     //축하글 수정
-    public void updateLetter(Long letterId, LetterUpdateRequestDTO requestDTO){
+    @Transactional
+    public void updateLetter(Long letterId, LetterUpdateRequestDTO requestDTO, MultipartFile file) {
         Letter letter = letterRepository.findById(letterId)
                 .orElseThrow(() -> new GeneralException(LetterErrorStatus.LETTER_NOT_FOUND));
 
@@ -79,11 +83,26 @@ public class LetterService {
             throw new GeneralException(LetterErrorStatus.NOT_OWNER_OF_LETTER);
         }
 
+        // 이미지 파일이 새로 들어온 경우 기존 S3 이미지 삭제 후 새로 업로드
+        if (file != null && !file.isEmpty()) {
+            // 기존 이미지가 있으면 삭제
+            if (letter.getPicUrl() != null) {
+                amazonS3Manager.deleteFileByUrl(letter.getPicUrl());
+            }
+
+            // 새 이미지 업로드
+            Uuid savedUuid = uuidRepository.save(
+                    Uuid.builder()
+                            .uuid(UUID.randomUUID().toString())
+                            .build()
+            );
+            String keyName = amazonS3Manager.generateLetterKeyName(savedUuid);
+            String picUrl = amazonS3Manager.uploadFile(keyName, file);
+            letter.setPicUrl(picUrl);
+        }
+
         if (requestDTO.getWriterName() != null) {
             letter.setWriterName(requestDTO.getWriterName());
-        }
-        if (requestDTO.getPicUrl() != null) {
-            letter.setPicUrl(requestDTO.getPicUrl());
         }
         if (requestDTO.getMessage() != null) {
             letter.setMessage(requestDTO.getMessage());
@@ -95,7 +114,9 @@ public class LetterService {
         letterRepository.save(letter);
     }
 
+
     //축하글 삭제
+    @Transactional
     public void deleteLetter(Long letterId) {
         Letter letter = letterRepository.findById(letterId)
                 .orElseThrow(() -> new GeneralException(LetterErrorStatus.LETTER_NOT_FOUND));
@@ -111,8 +132,6 @@ public class LetterService {
     public LetterListResponseDTO getLetters(String limit, LocalDateTime lastUpdatedAt, Long lastLetterId) {
         int fetchCount = "all".equalsIgnoreCase(limit) ? Integer.MAX_VALUE : Integer.parseInt(limit);
         List<Letter> letters;
-
-        // fetchCount + 1로 조회해서 다음 페이지 존재 여부 확인
         int queryCount = fetchCount + 1;
 
         if (lastUpdatedAt == null || lastLetterId == null) {
@@ -122,7 +141,6 @@ public class LetterService {
         }
 
         boolean isLast = letters.size() <= fetchCount;
-        // fetchCount까지만 자름
         if (!isLast) {
             letters = letters.subList(0, fetchCount);
         }
@@ -131,8 +149,12 @@ public class LetterService {
                 .map(LetterResponseDTO::from)
                 .collect(Collectors.toList());
 
-        return new LetterListResponseDTO(content, isLast);
+        Long nextLastLetterId = content.isEmpty() ? null : content.get(content.size() - 1).getId();
+        LocalDateTime nextLastUpdatedAt = content.isEmpty() ? null : content.get(content.size() - 1).getCreatedAt();
+
+        return new LetterListResponseDTO(content, isLast, nextLastLetterId, nextLastUpdatedAt);
     }
+
 
 
 

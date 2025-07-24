@@ -40,4 +40,21 @@ public class AmazonS3Manager {
     public String generateLetterKeyName(Uuid uuid){
         return amazonConfig.getLetterPath() + "/" + uuid.getUuid();
     }
+
+
+    // S3에 저장된 파일 삭제 메서드 - picUrl을 받아서 key 추출 후 삭제
+    public void deleteFileByUrl(String fileUrl) {
+        try {
+            // fileUrl에서 버킷명과 key를 분리하는 로직
+            String bucket = amazonConfig.getBucket();
+            // fileUrl 예시: https://버킷명.s3.지역.amazonaws.com/key
+            // key는 fileUrl에서 버킷 URL 부분을 제외한 나머지
+            String baseUrl = "https://" + bucket + ".s3." + amazonConfig.getRegion() + ".amazonaws.com/";
+            String key = fileUrl.replace(baseUrl, "");
+
+            amazonS3.deleteObject(bucket, key);
+        } catch (Exception e) {
+            log.error("Failed to delete file from S3: {}", e.getMessage());
+        }
+    }
 }

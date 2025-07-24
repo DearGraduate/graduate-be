@@ -13,10 +13,6 @@ public class LetterUpdateRequestDTO {
     @Size(max = 10, message = "작성자 이름은 최대 10자까지 입력할 수 있습니다.")
     private String writerName;
 
-    @NotBlank(message = "사진 URL은 필수입니다.")
-    @Size(max = 1000, message = "사진 URL은 최대 1000자까지 입력할 수 있습니다.")
-    private String picUrl;
-
     @NotBlank(message = "내용은 필수입니다.")
     @Size(max = 300, message = "내용은 최대 300자까지 입력할 수 있습니다.")
     private String message;
