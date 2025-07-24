@@ -40,4 +40,20 @@ public class RedisUtil {
     public void deleteData(String key) {
         template.delete(key);
     }
+
+    //데이터 증가
+    public Long increment(String key) {
+        return template.opsForValue().increment(key);
+    }
+
+    //데이터 감소
+    public Long decrement(String key) {
+        return template.opsForValue().decrement(key);
+    }
+
+    //데이터(숫자) 가져오기
+    public long getLongValue(String key) {
+        String value = getData(key);
+        return value != null ? Long.parseLong(value) : 0L;
+    }
 }
