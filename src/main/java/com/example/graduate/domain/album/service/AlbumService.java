@@ -9,8 +9,10 @@ import com.example.graduate.domain.user.repository.UserRepository;
 import com.example.graduate.global.SecurityUtil;
 import com.example.graduate.global.apiPayload.exception.GeneralException;
 import com.example.graduate.domain.album.status.AlbumErrorStatus;
+import com.example.graduate.global.redis.RedisUtil;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -20,12 +22,14 @@ public class AlbumService {
     private final AlbumRepository albumRepository;
     private final UserRepository userRepository;
     private final SecurityUtil securityUtil;
+    private final RedisUtil redisUtil;
 
     private Long getCurrentUserId() {
         User user = securityUtil.getCurrentUser();
         return user.getId();
     }
-
+    
+    @Transactional
     public AlbumResponseDTO createAlbum(AlbumRequestDTO dto) {
         Long userId = getCurrentUserId();
 
@@ -45,6 +49,8 @@ public class AlbumService {
                 .build();
 
         albumRepository.save(album);
+        redisUtil.increment("project:album:count");
+
         return AlbumResponseDTO.builder()
                 .id(album.getId())
                 .albumName(album.getAlbumName())
