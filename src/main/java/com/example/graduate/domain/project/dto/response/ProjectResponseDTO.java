@@ -6,7 +6,7 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class ProjectResponse {
+public class ProjectResponseDTO {
   private final long totalAlbumCount;
   private final long totalLetterCount;
 }

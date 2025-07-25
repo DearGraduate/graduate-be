@@ -1,7 +1,7 @@
 package com.example.graduate.domain.project.service;
 
 
-import com.example.graduate.domain.project.dto.response.ProjectResponse;
+import com.example.graduate.domain.project.dto.response.ProjectResponseDTO;
 import com.example.graduate.global.redis.RedisUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -15,11 +15,11 @@ public class ProjectService {
   private static final String ALBUM_COUNT_KEY = "project:album:count";
   private static final String LETTER_COUNT_KEY = "project:letter:count";
 
-  public ProjectResponse getSummary() {
+  public ProjectResponseDTO getSummary() {
 
     long albumCount = redisUtil.getLongValue(ALBUM_COUNT_KEY);
     long letterCount = redisUtil.getLongValue(LETTER_COUNT_KEY);
 
-    return new ProjectResponse(albumCount, letterCount);
+    return new ProjectResponseDTO(albumCount, letterCount);
   }
 }
