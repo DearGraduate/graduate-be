@@ -1,7 +1,8 @@
 package com.example.graduate.domain.project.controller;
 
-import com.example.graduate.domain.project.dto.response.ProjectResponse;
+import com.example.graduate.domain.project.dto.response.ProjectResponseDTO;
 import com.example.graduate.domain.project.service.ProjectService;
+import com.example.graduate.global.apiPayload.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +23,9 @@ public class ProjectController {
       summary = "누적 앨범·축하글 수 조회",
       description = "현재까지 생성된 앨범·축하글 수를 조회합니다.")
   @GetMapping("/info")
-  public ResponseEntity<ProjectResponse> getProjectSummary() {
-    return ResponseEntity.ok(projectService.getSummary());
+  public ResponseEntity<ApiResponse<ProjectResponseDTO>> getProjectSummary() {
+    ProjectResponseDTO result = projectService.getSummary();
+
+    return ResponseEntity.ok(ApiResponse.onSuccess(result));
   }
 }
