@@ -22,9 +22,6 @@ public class KakaoOAuthService {
   private final KakaoOAuthProperties props;
   private final RestTemplate restTemplate;
 
-  @Value("${kakao.admin-key}")
-  private String kakaoAdminKey;
-
   /**
    * 카카오 인가 URI 생성
    */
@@ -85,7 +82,7 @@ public class KakaoOAuthService {
 
     HttpHeaders headers = new HttpHeaders();
     headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-    headers.set("Authorization", "KakaoAK " + kakaoAdminKey);
+    headers.set("Authorization", "KakaoAK " + props.getAdminKey());
 
     MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
     body.add("target_id_type", "user_id");
