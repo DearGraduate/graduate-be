@@ -4,6 +4,7 @@ import com.example.graduate.domain.album.domain.Album;
 import com.example.graduate.domain.album.dto.AlbumRequestDTO;
 import com.example.graduate.domain.album.dto.AlbumResponseDTO;
 import com.example.graduate.domain.album.repository.AlbumRepository;
+import com.example.graduate.domain.letter.repository.LetterRepository;
 import com.example.graduate.domain.user.entity.User;
 import com.example.graduate.domain.user.repository.UserRepository;
 import com.example.graduate.global.SecurityUtil;
@@ -21,6 +22,7 @@ public class AlbumService {
 
     private final AlbumRepository albumRepository;
     private final UserRepository userRepository;
+    private final LetterRepository letterRepository;
     private final SecurityUtil securityUtil;
     private final RedisUtil redisUtil;
 
@@ -81,6 +83,8 @@ public class AlbumService {
 
         Album album = albumRepository.findByUserId(userId)
                 .orElseThrow(() -> new GeneralException(AlbumErrorStatus._ALBUM_NOT_FOUND));
+        // 연관된 축하글 삭제
+        letterRepository.deleteAllByAlbumId(album.getId());
         albumRepository.delete(album);
     }
 

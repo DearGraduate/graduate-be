@@ -28,6 +28,9 @@ public interface LetterRepository extends JpaRepository<Letter, Long> {
             Pageable pageable
     );
 
+
+    void deleteAllByAlbumId(Long albumId);
+
     default List<Letter> findTopByOrderByUpdatedAtDesc(int limit) {
         return findTopByOrderByUpdatedAtDesc(PageRequest.of(0, limit));
     }
