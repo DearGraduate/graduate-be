@@ -26,6 +26,7 @@ public class UserService {
   private final JwtUtil jwtUtil;
   private final RedisUtil redisUtil;
   private final SecurityUtil securityUtil;
+  private final KakaoOAuthService kakaoOAuthService;
 
   @Value("${cookie.secure}")
   private boolean secureCookie;
@@ -188,6 +189,13 @@ public class UserService {
       HttpServletResponse response) {
     User user = securityUtil.getCurrentUser();
     String socialId = user.getSocialId();
+
+    // 카카오 연결 해제
+    try {
+      kakaoOAuthService.unlinkKakao(socialId);
+    } catch (Exception e) {
+      throw new GeneralException(UserErrorStatus.UNLINK_FAILED);
+    }
 
     userRepository.delete(user);
     redisUtil.deleteData("refresh:" + socialId);
