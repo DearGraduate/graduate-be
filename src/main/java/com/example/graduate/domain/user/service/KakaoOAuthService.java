@@ -5,6 +5,7 @@ import com.example.graduate.global.config.KakaoOAuthProperties;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -74,5 +75,20 @@ public class KakaoOAuthService {
     String email = body.get("kakao_account").get("email").asText();
 
     return new KakaoUserInfo(id, name, email);
+  }
+
+  public void unlinkKakao(String socialId) {
+    String url = "https://kapi.kakao.com/v1/user/unlink";
+
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+    headers.set("Authorization", "KakaoAK " + props.getAdminKey());
+
+    MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
+    body.add("target_id_type", "user_id");
+    body.add("target_id", socialId);
+
+    HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(body, headers);
+    restTemplate.postForEntity(url, request, String.class);
   }
 }
