@@ -14,6 +14,11 @@ public class AlbumRequestDTO {
     @NotBlank(message = "앨범 제목은 비어 있을 수 없습니다.")
     @Size(max = 5, message = "앨범 제목은 최대 5글자까지 입력 가능합니다.")
     private String albumName;
+
+    @NotBlank(message = "앨범 종류는 비어 있을 수 없습니다.")
+    @Size(max = 15, message = "앨범 종류는 최대 15글자까지 입력 가능합니다.")
+    private String albumType;
+
     @Size(max = 20, message = "앨범 설명은 최대 20글자까지 입력 가능합니다.")
     private String description;
 }

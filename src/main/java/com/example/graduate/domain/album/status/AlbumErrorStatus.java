@@ -11,7 +11,7 @@ import org.springframework.http.HttpStatus;
 public enum AlbumErrorStatus implements BaseErrorCode {
 
     // AlbumErrorStatus.java
-    _REQUIRED_FIELDS_MISSING( HttpStatus.BAD_REQUEST,"ALBUM4001", "앨범 제목과 졸업일자는 반드시 입력되어야 합니다."),
+    _REQUIRED_FIELDS_MISSING( HttpStatus.BAD_REQUEST,"ALBUM4001", "앨범 제목과 종류, 졸업일자는 반드시 입력되어야 합니다."),
     _ALBUM_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "ALBUM4001", "이미 앨범이 존재합니다."),
     _ALBUM_NOT_FOUND(HttpStatus.NOT_FOUND, "ALBUM4041", "앨범을 찾을 수 없습니다."),
     _MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "ALBUM4042", "사용자를 찾을 수 없습니다.");
