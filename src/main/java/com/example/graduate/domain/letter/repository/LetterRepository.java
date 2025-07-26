@@ -35,4 +35,17 @@ public interface LetterRepository extends JpaRepository<Letter, Long> {
     default List<Letter> findByUpdatedAtAndIdBeforeOrderByUpdatedAtDesc(LocalDateTime lastUpdatedAt, Long lastLetterId, int limit) {
         return findByUpdatedAtAndIdBeforeOrderByUpdatedAtDesc(lastUpdatedAt, lastLetterId, PageRequest.of(0, limit));
     }
+
+    //특정 앨범의 축하글 전체 조회 (limit만 사용)
+    @Query("SELECT l FROM Letter l WHERE l.albumId = :albumId ORDER BY COALESCE(l.updatedAt, l.createdAt) DESC, l.id DESC")
+    List<Letter> findByAlbumIdOrderByUpdatedAtDesc(
+            @Param("albumId") Long albumId,
+            Pageable pageable
+    ); //추가
+
+    //default method
+    default List<Letter> findByAlbumIdOrderByUpdatedAtDesc(Long albumId, int limit) {
+        return findByAlbumIdOrderByUpdatedAtDesc(albumId, PageRequest.of(0, limit));
+    } //추가
+
 }

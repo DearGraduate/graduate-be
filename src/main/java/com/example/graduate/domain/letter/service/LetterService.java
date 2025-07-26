@@ -155,6 +155,20 @@ public class LetterService {
         return new LetterListResponseDTO(content, isLast, nextLastLetterId, nextLastUpdatedAt);
     }
 
+    //특정 앨범에 대한 축하글 조회
+    public LetterListResponseDTO getLettersByAlbum(Long albumId, String limit) {
+        int fetchCount = "all".equalsIgnoreCase(limit) ? Integer.MAX_VALUE : Integer.parseInt(limit);
+
+        List<Letter> letters = letterRepository.findByAlbumIdOrderByUpdatedAtDesc(albumId, fetchCount);
+
+        List<LetterResponseDTO> content = letters.stream()
+                .map(LetterResponseDTO::from)
+                .collect(Collectors.toList());
+
+        return new LetterListResponseDTO(content, true, null, null); // isLast = true로 고정
+    }
+
+
 
 
 
