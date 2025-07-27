@@ -97,7 +97,7 @@ public class LetterController {
         }
     }
 
-    //축하글 가져오기
+    //축하글 전체 가져오기
     @Operation(summary = "축하글 목록 조회", description = "updatedAt와 createdAt을 사용해 목록 조회")
     @GetMapping("/letters")
     public ResponseEntity<ApiResponse<?>> getLetters(
@@ -108,6 +108,22 @@ public class LetterController {
         LetterListResponseDTO result = letterService.getLetters(limit, lastUpdatedAt, lastLetterId);
         return ResponseEntity.ok(ApiResponse.onSuccess(result));
     }
+
+
+    //특정 앨범에 대한 축하글 가져오기
+    @Operation(summary = "특정 앨범의 축하글 전체 조회", description = "특정 앨범 ID에 해당하는 축하글을 최신순으로 조회합니다.")
+    @GetMapping("/albums/{albumId}/letters")
+    public ResponseEntity<ApiResponse<?>> getLettersByAlbum(
+            @PathVariable Long albumId,
+            @RequestParam String limit,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime lastUpdatedAt,
+            @RequestParam(required = false) Long lastLetterId
+    ) {
+        LetterListResponseDTO result = letterService.getLettersByAlbum(albumId, limit, lastUpdatedAt, lastLetterId);
+        return ResponseEntity.ok(ApiResponse.onSuccess(result));
+    }
+
+
 
 
 }
