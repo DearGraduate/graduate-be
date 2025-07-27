@@ -159,19 +159,32 @@ public class LetterService {
     }
 
     //특정 앨범에 대한 축하글 조회
-    public LetterListResponseDTO getLettersByAlbum(Long albumId, String limit) {
+    public LetterListResponseDTO getLettersByAlbum(Long albumId, String limit, LocalDateTime lastUpdatedAt, Long lastLetterId) {
         int fetchCount = "all".equalsIgnoreCase(limit) ? Integer.MAX_VALUE : Integer.parseInt(limit);
+        int queryCount = fetchCount + 1;
 
-        List<Letter> letters = letterRepository.findByAlbumIdOrderByUpdatedAtDesc(albumId, fetchCount);
+        List<Letter> letters;
+
+        if (lastUpdatedAt == null || lastLetterId == null) {
+            letters = letterRepository.findByAlbumIdOrderByUpdatedAtDesc(albumId, queryCount);
+        } else {
+            letters = letterRepository.findByAlbumIdAndUpdatedAtAndIdBeforeOrderByUpdatedAtDesc(albumId, lastUpdatedAt, lastLetterId, queryCount);
+        }
+
+        boolean isLast = letters.size() <= fetchCount;
+        if (!isLast) {
+            letters = letters.subList(0, fetchCount);
+        }
 
         List<LetterResponseDTO> content = letters.stream()
                 .map(LetterResponseDTO::from)
                 .collect(Collectors.toList());
 
-        return new LetterListResponseDTO(content, true, null, null); // isLast = true로 고정
+        Long nextLastLetterId = content.isEmpty() ? null : content.get(content.size() - 1).getId();
+        LocalDateTime nextLastUpdatedAt = content.isEmpty() ? null : content.get(content.size() - 1).getCreatedAt();
+
+        return new LetterListResponseDTO(content, isLast, nextLastLetterId, nextLastUpdatedAt);
     }
-
-
 
 
 

@@ -115,11 +115,15 @@ public class LetterController {
     @GetMapping("/albums/{albumId}/letters")
     public ResponseEntity<ApiResponse<?>> getLettersByAlbum(
             @PathVariable Long albumId,
-            @RequestParam String limit
+            @RequestParam String limit,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime lastUpdatedAt,
+            @RequestParam(required = false) Long lastLetterId
     ) {
-        LetterListResponseDTO result = letterService.getLettersByAlbum(albumId, limit);
+        LetterListResponseDTO result = letterService.getLettersByAlbum(albumId, limit, lastUpdatedAt, lastLetterId);
         return ResponseEntity.ok(ApiResponse.onSuccess(result));
     }
+
+
 
 
 }
