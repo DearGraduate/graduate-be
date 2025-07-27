@@ -57,7 +57,7 @@ public class LetterService {
                             .build()
             );
 
-            String keyName = amazonS3Manager.generateLetterKeyName(savedUuid);
+            String keyName = amazonS3Manager.generateLetterKeyName(file, savedUuid);
             picUrl = amazonS3Manager.uploadFile(keyName, file);
         }
 
@@ -99,7 +99,7 @@ public class LetterService {
                             .uuid(UUID.randomUUID().toString())
                             .build()
             );
-            String keyName = amazonS3Manager.generateLetterKeyName(savedUuid);
+            String keyName = amazonS3Manager.generateLetterKeyName(file, savedUuid);
             String picUrl = amazonS3Manager.uploadFile(keyName, file);
             letter.setPicUrl(picUrl);
         }
