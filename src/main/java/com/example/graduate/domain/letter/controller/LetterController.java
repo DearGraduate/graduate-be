@@ -124,5 +124,4 @@ public class LetterController {
         return ResponseEntity.ok(ApiResponse.onSuccess(result));
     }
 
-
 }

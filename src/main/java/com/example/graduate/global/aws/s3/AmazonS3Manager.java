@@ -27,6 +27,8 @@ public class AmazonS3Manager {
     public String uploadFile(String keyName, MultipartFile file){
         ObjectMetadata metadata = new ObjectMetadata();
         metadata.setContentLength(file.getSize());
+        metadata.setContentType(file.getContentType()); //이미지 다운로드 되는 문제 해결 코드
+
         try {
             amazonS3.putObject(new PutObjectRequest(
                     amazonConfig.getBucket(), keyName, file.getInputStream(), metadata));
