@@ -117,13 +117,12 @@ public class LetterController {
             @PathVariable Long albumId,
             @RequestParam String limit,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime lastUpdatedAt,
-            @RequestParam(required = false) Long lastLetterId
+            @RequestParam(required = false) Long lastLetterId,
+            @RequestParam(defaultValue = "false") boolean publicOnly // 👈 추가
     ) {
-        LetterListResponseDTO result = letterService.getLettersByAlbum(albumId, limit, lastUpdatedAt, lastLetterId);
+        LetterListResponseDTO result = letterService.getLettersByAlbum(albumId, limit, lastUpdatedAt, lastLetterId, publicOnly);
         return ResponseEntity.ok(ApiResponse.onSuccess(result));
     }
-
-
 
 
 }

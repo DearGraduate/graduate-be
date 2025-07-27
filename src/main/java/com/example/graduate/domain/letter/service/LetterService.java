@@ -159,16 +159,26 @@ public class LetterService {
     }
 
     //특정 앨범에 대한 축하글 조회
-    public LetterListResponseDTO getLettersByAlbum(Long albumId, String limit, LocalDateTime lastUpdatedAt, Long lastLetterId) {
+    public LetterListResponseDTO getLettersByAlbum(Long albumId, String limit, LocalDateTime lastUpdatedAt, Long lastLetterId, boolean publicOnly) {
         int fetchCount = "all".equalsIgnoreCase(limit) ? Integer.MAX_VALUE : Integer.parseInt(limit);
         int queryCount = fetchCount + 1;
 
         List<Letter> letters;
 
-        if (lastUpdatedAt == null || lastLetterId == null) {
-            letters = letterRepository.findByAlbumIdOrderByUpdatedAtDesc(albumId, queryCount);
+        if (publicOnly) {
+            // 공개된 글만
+            if (lastUpdatedAt == null || lastLetterId == null) {
+                letters = letterRepository.findPublicByAlbumIdOrderByUpdatedAtDesc(albumId, queryCount);
+            } else {
+                letters = letterRepository.findPublicByAlbumIdAndUpdatedAtAndIdBeforeOrderByUpdatedAtDesc(albumId, lastUpdatedAt, lastLetterId, queryCount);
+            }
         } else {
-            letters = letterRepository.findByAlbumIdAndUpdatedAtAndIdBeforeOrderByUpdatedAtDesc(albumId, lastUpdatedAt, lastLetterId, queryCount);
+            // 전체 글
+            if (lastUpdatedAt == null || lastLetterId == null) {
+                letters = letterRepository.findByAlbumIdOrderByUpdatedAtDesc(albumId, queryCount);
+            } else {
+                letters = letterRepository.findByAlbumIdAndUpdatedAtAndIdBeforeOrderByUpdatedAtDesc(albumId, lastUpdatedAt, lastLetterId, queryCount);
+            }
         }
 
         boolean isLast = letters.size() <= fetchCount;
@@ -185,8 +195,5 @@ public class LetterService {
 
         return new LetterListResponseDTO(content, isLast, nextLastLetterId, nextLastUpdatedAt);
     }
-
-
-
 
 }

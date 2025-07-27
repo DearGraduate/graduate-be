@@ -54,7 +54,7 @@ public interface LetterRepository extends JpaRepository<Letter, Long> {
         return findByAlbumIdOrderByUpdatedAtDesc(albumId, PageRequest.of(0, limit));
     }
 
-    // 특정 앨범에서 무한스크롤용 조회 (updatedAt + letterId 기반)
+    //특정 앨범에서 무한스크롤용 조회 (updatedAt + letterId 기반)
     @Query("""
         SELECT l FROM Letter l
         WHERE l.albumId = :albumId
@@ -75,4 +75,48 @@ public interface LetterRepository extends JpaRepository<Letter, Long> {
             Long albumId, LocalDateTime lastUpdatedAt, Long lastLetterId, int limit) {
         return findByAlbumIdAndUpdatedAtAndIdBeforeOrderByUpdatedAtDesc(albumId, lastUpdatedAt, lastLetterId, PageRequest.of(0, limit));
     }
+
+
+
+//추가 -> isPublic 경우 나누기 true/false
+
+    @Query("""
+    SELECT l FROM Letter l 
+    WHERE l.albumId = :albumId 
+      AND l.isPublic = true
+    ORDER BY COALESCE(l.updatedAt, l.createdAt) DESC, l.letterId DESC
+    """)
+    List<Letter> findPublicByAlbumIdOrderByUpdatedAtDesc(
+            @Param("albumId") Long albumId,
+            Pageable pageable
+    );
+
+    default List<Letter> findPublicByAlbumIdOrderByUpdatedAtDesc(Long albumId, int limit) {
+        return findPublicByAlbumIdOrderByUpdatedAtDesc(albumId, PageRequest.of(0, limit));
+    }
+
+    @Query("""
+    SELECT l FROM Letter l
+    WHERE l.albumId = :albumId
+      AND l.isPublic = true
+      AND (
+        COALESCE(l.updatedAt, l.createdAt) < :lastUpdatedAt
+        OR (COALESCE(l.updatedAt, l.createdAt) = :lastUpdatedAt AND l.letterId < :lastLetterId)
+      )
+    ORDER BY COALESCE(l.updatedAt, l.createdAt) DESC, l.letterId DESC
+    """)
+    List<Letter> findPublicByAlbumIdAndUpdatedAtAndIdBeforeOrderByUpdatedAtDesc(
+            @Param("albumId") Long albumId,
+            @Param("lastUpdatedAt") LocalDateTime lastUpdatedAt,
+            @Param("lastLetterId") Long lastLetterId,
+            Pageable pageable
+    );
+
+    default List<Letter> findPublicByAlbumIdAndUpdatedAtAndIdBeforeOrderByUpdatedAtDesc(
+            Long albumId, LocalDateTime lastUpdatedAt, Long lastLetterId, int limit) {
+        return findPublicByAlbumIdAndUpdatedAtAndIdBeforeOrderByUpdatedAtDesc(albumId, lastUpdatedAt, lastLetterId, PageRequest.of(0, limit));
+    }
+
+
+
 }
