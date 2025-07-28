@@ -31,7 +31,7 @@ public class Letter extends BaseEntity {
     private String message;
 
     @Setter
-    @Column
+    @Column(columnDefinition = "TINYINT(1)")
     private Boolean isPublic;
 
     @Column(nullable = false)

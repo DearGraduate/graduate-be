@@ -54,7 +54,7 @@ public interface LetterRepository extends JpaRepository<Letter, Long> {
         return findByAlbumIdOrderByUpdatedAtDesc(albumId, PageRequest.of(0, limit));
     }
 
-    //특정 앨범에서 무한스크롤용 조회 (updatedAt + letterId 기반)
+    // 특정 앨범에서 무한스크롤용 조회 (updatedAt + letterId 기반)
     @Query("""
         SELECT l FROM Letter l
         WHERE l.albumId = :albumId
@@ -76,47 +76,42 @@ public interface LetterRepository extends JpaRepository<Letter, Long> {
         return findByAlbumIdAndUpdatedAtAndIdBeforeOrderByUpdatedAtDesc(albumId, lastUpdatedAt, lastLetterId, PageRequest.of(0, limit));
     }
 
-
-
-//추가 -> isPublic 경우 나누기 true/false
-
     @Query("""
-    SELECT l FROM Letter l 
-    WHERE l.albumId = :albumId 
-      AND l.isPublic = true
+    SELECT l FROM Letter l
+    WHERE l.albumId = :albumId
+      AND (
+        l.userId = :userId
+        OR l.isPublic = true
+      )
     ORDER BY COALESCE(l.updatedAt, l.createdAt) DESC, l.letterId DESC
-    """)
-    List<Letter> findPublicByAlbumIdOrderByUpdatedAtDesc(
+""")
+    List<Letter> findVisibleLettersByAlbum(
             @Param("albumId") Long albumId,
+            @Param("userId") Long userId,
             Pageable pageable
     );
-
-    default List<Letter> findPublicByAlbumIdOrderByUpdatedAtDesc(Long albumId, int limit) {
-        return findPublicByAlbumIdOrderByUpdatedAtDesc(albumId, PageRequest.of(0, limit));
-    }
 
     @Query("""
     SELECT l FROM Letter l
     WHERE l.albumId = :albumId
-      AND l.isPublic = true
+      AND (
+        l.userId = :userId
+        OR l.isPublic = true
+      )
       AND (
         COALESCE(l.updatedAt, l.createdAt) < :lastUpdatedAt
         OR (COALESCE(l.updatedAt, l.createdAt) = :lastUpdatedAt AND l.letterId < :lastLetterId)
       )
     ORDER BY COALESCE(l.updatedAt, l.createdAt) DESC, l.letterId DESC
-    """)
-    List<Letter> findPublicByAlbumIdAndUpdatedAtAndIdBeforeOrderByUpdatedAtDesc(
+""")
+    List<Letter> findVisibleLettersByAlbumAndCursor(
             @Param("albumId") Long albumId,
+            @Param("userId") Long userId,
             @Param("lastUpdatedAt") LocalDateTime lastUpdatedAt,
             @Param("lastLetterId") Long lastLetterId,
             Pageable pageable
     );
 
-    default List<Letter> findPublicByAlbumIdAndUpdatedAtAndIdBeforeOrderByUpdatedAtDesc(
-            Long albumId, LocalDateTime lastUpdatedAt, Long lastLetterId, int limit) {
-        return findPublicByAlbumIdAndUpdatedAtAndIdBeforeOrderByUpdatedAtDesc(albumId, lastUpdatedAt, lastLetterId, PageRequest.of(0, limit));
-    }
-
-
-
 }
+
+
