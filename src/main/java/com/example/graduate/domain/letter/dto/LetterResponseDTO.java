@@ -15,15 +15,17 @@ public class LetterResponseDTO {
     private String message;
     private Boolean isPublic;
     private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 
     public static LetterResponseDTO from(Letter letter) {
         return LetterResponseDTO.builder()
-                .id(letter.getUserId())
+                .id(letter.getLetterId())
                 .writerName(letter.getWriterName())
                 .picUrl(letter.getPicUrl())
                 .message(letter.getMessage())
                 .isPublic(letter.getIsPublic())
                 .createdAt(letter.getCreatedAt())
+                .updatedAt(letter.getUpdatedAt())
                 .build();
     }
 

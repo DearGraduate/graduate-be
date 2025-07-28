@@ -75,4 +75,43 @@ public interface LetterRepository extends JpaRepository<Letter, Long> {
             Long albumId, LocalDateTime lastUpdatedAt, Long lastLetterId, int limit) {
         return findByAlbumIdAndUpdatedAtAndIdBeforeOrderByUpdatedAtDesc(albumId, lastUpdatedAt, lastLetterId, PageRequest.of(0, limit));
     }
+
+    @Query("""
+    SELECT l FROM Letter l
+    WHERE l.albumId = :albumId
+      AND (
+        l.userId = :userId
+        OR l.isPublic = true
+      )
+    ORDER BY COALESCE(l.updatedAt, l.createdAt) DESC, l.letterId DESC
+""")
+    List<Letter> findVisibleLettersByAlbum(
+            @Param("albumId") Long albumId,
+            @Param("userId") Long userId,
+            Pageable pageable
+    );
+
+    @Query("""
+    SELECT l FROM Letter l
+    WHERE l.albumId = :albumId
+      AND (
+        l.userId = :userId
+        OR l.isPublic = true
+      )
+      AND (
+        COALESCE(l.updatedAt, l.createdAt) < :lastUpdatedAt
+        OR (COALESCE(l.updatedAt, l.createdAt) = :lastUpdatedAt AND l.letterId < :lastLetterId)
+      )
+    ORDER BY COALESCE(l.updatedAt, l.createdAt) DESC, l.letterId DESC
+""")
+    List<Letter> findVisibleLettersByAlbumAndCursor(
+            @Param("albumId") Long albumId,
+            @Param("userId") Long userId,
+            @Param("lastUpdatedAt") LocalDateTime lastUpdatedAt,
+            @Param("lastLetterId") Long lastLetterId,
+            Pageable pageable
+    );
+
 }
+
+

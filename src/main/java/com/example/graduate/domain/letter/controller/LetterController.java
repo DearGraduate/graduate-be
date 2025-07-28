@@ -30,7 +30,7 @@ public class LetterController {
 
     private final LetterService letterService;
 
-    // 축하글 생성
+    //축하글 생성
     @Operation(summary = "축하글 생성", description = "앨범 ID를 기반으로 축하글을 생성")
     @PostMapping(value = "/albums/{albumId}/letter", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse<?>> createLetter(
@@ -122,8 +122,6 @@ public class LetterController {
         LetterListResponseDTO result = letterService.getLettersByAlbum(albumId, limit, lastUpdatedAt, lastLetterId);
         return ResponseEntity.ok(ApiResponse.onSuccess(result));
     }
-
-
 
 
 }
