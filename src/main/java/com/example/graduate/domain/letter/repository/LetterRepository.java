@@ -13,21 +13,21 @@ import java.util.List;
 
 @Repository
 public interface LetterRepository extends JpaRepository<Letter, Long> {
-    @Query("SELECT l FROM Letter l ORDER BY COALESCE(l.updatedAt, l.createdAt) DESC, l.id DESC")
+
+    @Query("SELECT l FROM Letter l ORDER BY COALESCE(l.updatedAt, l.createdAt) DESC, l.letterId DESC")
     List<Letter> findTopByOrderByUpdatedAtDesc(Pageable pageable);
 
     @Query("""
-    SELECT l FROM Letter l 
-    WHERE (COALESCE(l.updatedAt, l.createdAt) < :lastUpdatedAt)
-       OR (COALESCE(l.updatedAt, l.createdAt) = :lastUpdatedAt AND l.id < :lastLetterId)
-    ORDER BY COALESCE(l.updatedAt, l.createdAt) DESC, l.id DESC
-""")
+        SELECT l FROM Letter l 
+        WHERE (COALESCE(l.updatedAt, l.createdAt) < :lastUpdatedAt)
+           OR (COALESCE(l.updatedAt, l.createdAt) = :lastUpdatedAt AND l.letterId < :lastLetterId)
+        ORDER BY COALESCE(l.updatedAt, l.createdAt) DESC, l.letterId DESC
+    """)
     List<Letter> findByUpdatedAtAndIdBeforeOrderByUpdatedAtDesc(
             @Param("lastUpdatedAt") LocalDateTime lastUpdatedAt,
             @Param("lastLetterId") Long lastLetterId,
             Pageable pageable
     );
-
 
     void deleteAllByAlbumId(Long albumId);
 
@@ -38,4 +38,80 @@ public interface LetterRepository extends JpaRepository<Letter, Long> {
     default List<Letter> findByUpdatedAtAndIdBeforeOrderByUpdatedAtDesc(LocalDateTime lastUpdatedAt, Long lastLetterId, int limit) {
         return findByUpdatedAtAndIdBeforeOrderByUpdatedAtDesc(lastUpdatedAt, lastLetterId, PageRequest.of(0, limit));
     }
+
+    // 특정 앨범의 축하글 조회 (limit만 사용)
+    @Query("""
+        SELECT l FROM Letter l 
+        WHERE l.albumId = :albumId 
+        ORDER BY COALESCE(l.updatedAt, l.createdAt) DESC, l.letterId DESC
+    """)
+    List<Letter> findByAlbumIdOrderByUpdatedAtDesc(
+            @Param("albumId") Long albumId,
+            Pageable pageable
+    );
+
+    default List<Letter> findByAlbumIdOrderByUpdatedAtDesc(Long albumId, int limit) {
+        return findByAlbumIdOrderByUpdatedAtDesc(albumId, PageRequest.of(0, limit));
+    }
+
+    // 특정 앨범에서 무한스크롤용 조회 (updatedAt + letterId 기반)
+    @Query("""
+        SELECT l FROM Letter l
+        WHERE l.albumId = :albumId
+          AND (
+            COALESCE(l.updatedAt, l.createdAt) < :lastUpdatedAt
+            OR (COALESCE(l.updatedAt, l.createdAt) = :lastUpdatedAt AND l.letterId < :lastLetterId)
+          )
+        ORDER BY COALESCE(l.updatedAt, l.createdAt) DESC, l.letterId DESC
+    """)
+    List<Letter> findByAlbumIdAndUpdatedAtAndIdBeforeOrderByUpdatedAtDesc(
+            @Param("albumId") Long albumId,
+            @Param("lastUpdatedAt") LocalDateTime lastUpdatedAt,
+            @Param("lastLetterId") Long lastLetterId,
+            Pageable pageable
+    );
+
+    default List<Letter> findByAlbumIdAndUpdatedAtAndIdBeforeOrderByUpdatedAtDesc(
+            Long albumId, LocalDateTime lastUpdatedAt, Long lastLetterId, int limit) {
+        return findByAlbumIdAndUpdatedAtAndIdBeforeOrderByUpdatedAtDesc(albumId, lastUpdatedAt, lastLetterId, PageRequest.of(0, limit));
+    }
+
+    @Query("""
+    SELECT l FROM Letter l
+    WHERE l.albumId = :albumId
+      AND (
+        l.userId = :userId
+        OR l.isPublic = true
+      )
+    ORDER BY COALESCE(l.updatedAt, l.createdAt) DESC, l.letterId DESC
+""")
+    List<Letter> findVisibleLettersByAlbum(
+            @Param("albumId") Long albumId,
+            @Param("userId") Long userId,
+            Pageable pageable
+    );
+
+    @Query("""
+    SELECT l FROM Letter l
+    WHERE l.albumId = :albumId
+      AND (
+        l.userId = :userId
+        OR l.isPublic = true
+      )
+      AND (
+        COALESCE(l.updatedAt, l.createdAt) < :lastUpdatedAt
+        OR (COALESCE(l.updatedAt, l.createdAt) = :lastUpdatedAt AND l.letterId < :lastLetterId)
+      )
+    ORDER BY COALESCE(l.updatedAt, l.createdAt) DESC, l.letterId DESC
+""")
+    List<Letter> findVisibleLettersByAlbumAndCursor(
+            @Param("albumId") Long albumId,
+            @Param("userId") Long userId,
+            @Param("lastUpdatedAt") LocalDateTime lastUpdatedAt,
+            @Param("lastLetterId") Long lastLetterId,
+            Pageable pageable
+    );
+
 }
+
+

@@ -19,7 +19,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-
+import org.springframework.data.domain.PageRequest;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -51,13 +51,22 @@ public class LetterService {
 
         // 파일이 있으면 UUID 생성 + S3 업로드 + URL 추출
         if (file != null && !file.isEmpty()) {
+            //확장자 검사 로직 추가
+            String originalFilename = file.getOriginalFilename();
+            if (originalFilename != null) {
+                String lowerCaseName = originalFilename.toLowerCase();
+                if (!(lowerCaseName.endsWith(".jpg") || lowerCaseName.endsWith(".jpeg") ||
+                        lowerCaseName.endsWith(".png") )) {
+                    throw new GeneralException(LetterErrorStatus.INVALID_FILE_EXTENSION);
+                }
+            }
             Uuid savedUuid = uuidRepository.save(
                     Uuid.builder()
                             .uuid(UUID.randomUUID().toString())
                             .build()
             );
 
-            String keyName = amazonS3Manager.generateLetterKeyName(savedUuid);
+            String keyName = amazonS3Manager.generateLetterKeyName(file, savedUuid);
             picUrl = amazonS3Manager.uploadFile(keyName, file);
         }
 
@@ -99,7 +108,7 @@ public class LetterService {
                             .uuid(UUID.randomUUID().toString())
                             .build()
             );
-            String keyName = amazonS3Manager.generateLetterKeyName(savedUuid);
+            String keyName = amazonS3Manager.generateLetterKeyName(file, savedUuid);
             String picUrl = amazonS3Manager.uploadFile(keyName, file);
             letter.setPicUrl(picUrl);
         }
@@ -131,7 +140,7 @@ public class LetterService {
         letterRepository.delete(letter);
     }
 
-    //축하글 가져오기
+    //축하글 전체 가져오기(이건 사용하지 않습니다)
     public LetterListResponseDTO getLetters(String limit, LocalDateTime lastUpdatedAt, Long lastLetterId) {
         int fetchCount = "all".equalsIgnoreCase(limit) ? Integer.MAX_VALUE : Integer.parseInt(limit);
         List<Letter> letters;
@@ -152,14 +161,58 @@ public class LetterService {
                 .map(LetterResponseDTO::from)
                 .collect(Collectors.toList());
 
-        Long nextLastLetterId = content.isEmpty() ? null : content.get(content.size() - 1).getId();
+        Long nextLastLetterId = content.isEmpty() ? null : content.get(content.size() - 1).getLetterId();
         LocalDateTime nextLastUpdatedAt = content.isEmpty() ? null : content.get(content.size() - 1).getCreatedAt();
 
         return new LetterListResponseDTO(content, isLast, nextLastLetterId, nextLastUpdatedAt);
     }
 
+    //특정 앨범에 대한 축하글 조회
+    public LetterListResponseDTO getLettersByAlbum(Long albumId, String limit, LocalDateTime lastUpdatedAt, Long lastLetterId) {
+        int fetchCount = "all".equalsIgnoreCase(limit) ? Integer.MAX_VALUE : Integer.parseInt(limit);
+        int queryCount = fetchCount + 1;
+        Long userId = getCurrentUserId();
 
+        boolean isOwner = albumRepository.findById(albumId)
+                .map(album -> album.getUserId().equals(userId))
+                .orElseThrow(() -> new GeneralException(LetterErrorStatus.ALBUM_NOT_FOUND));
 
+        List<Letter> letters;
 
+        if (isOwner) {
+            // 앨범 주인은 모든 글 조회
+            if (lastUpdatedAt == null || lastLetterId == null) {
+                letters = letterRepository.findByAlbumIdOrderByUpdatedAtDesc(albumId, queryCount);
+            } else {
+                letters = letterRepository.findByAlbumIdAndUpdatedAtAndIdBeforeOrderByUpdatedAtDesc(albumId, lastUpdatedAt, lastLetterId, queryCount);
+            }
+        } else {
+            // 앨범 주인이 아닌 경우: 본인 글 + 공개된 글만
+            if (lastUpdatedAt == null || lastLetterId == null) {
+                letters = letterRepository.findVisibleLettersByAlbum(albumId, userId, PageRequest.of(0, queryCount));
+            } else {
+                letters = letterRepository.findVisibleLettersByAlbumAndCursor(albumId, userId, lastUpdatedAt, lastLetterId, PageRequest.of(0, queryCount));
+            }
+        }
+
+        boolean isLast = letters.size() <= fetchCount;
+        if (!isLast) {
+            letters = letters.subList(0, fetchCount);
+        }
+
+        List<LetterResponseDTO> content = letters.stream()
+                .map(LetterResponseDTO::from)
+                .collect(Collectors.toList());
+
+        Long nextLastLetterId = content.isEmpty() ? null : content.get(content.size() - 1).getLetterId();
+        LocalDateTime nextLastUpdatedAt = content.isEmpty()
+                ? null
+                : content.get(content.size() - 1).getUpdatedAt() != null
+                ? content.get(content.size() - 1).getUpdatedAt()
+                : content.get(content.size() - 1).getCreatedAt();
+
+        return new LetterListResponseDTO(content, isLast, nextLastLetterId, nextLastUpdatedAt);
+
+    }
 
 }

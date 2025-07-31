@@ -9,21 +9,24 @@ import java.time.LocalDateTime;
 @Getter
 @Builder
 public class LetterResponseDTO {
-    private Long id;
+    private Long letterId;
     private String writerName;
     private String picUrl;
     private String message;
     private Boolean isPublic;
     private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+
 
     public static LetterResponseDTO from(Letter letter) {
         return LetterResponseDTO.builder()
-                .id(letter.getUserId())
+                .letterId(letter.getLetterId())
                 .writerName(letter.getWriterName())
                 .picUrl(letter.getPicUrl())
                 .message(letter.getMessage())
                 .isPublic(letter.getIsPublic())
                 .createdAt(letter.getCreatedAt())
+                .updatedAt(letter.getUpdatedAt())
                 .build();
     }
 

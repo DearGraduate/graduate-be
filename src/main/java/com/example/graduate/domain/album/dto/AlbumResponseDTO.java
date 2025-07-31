@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
 public class AlbumResponseDTO {
     private Long id;
     private String albumName;
+    private String albumType;
     private String description;
     private LocalDate graduationDate;
     private LocalDateTime createdAt;

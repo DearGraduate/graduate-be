@@ -46,6 +46,7 @@ public class AlbumService {
         Album album = Album.builder()
                 .userId(userId) // 💥 Long 값 바로 세팅
                 .albumName(dto.getAlbumName())
+                .albumType(dto.getAlbumType())
                 .description(dto.getDescription())
                 .graduationDate(dto.getGraduationDate())
                 .build();
@@ -56,6 +57,7 @@ public class AlbumService {
         return AlbumResponseDTO.builder()
                 .id(album.getId())
                 .albumName(album.getAlbumName())
+                .albumType(album.getAlbumType())
                 .description(album.getDescription())
                 .graduationDate(album.getGraduationDate())
                 .createdAt(album.getCreatedAt())
@@ -68,12 +70,13 @@ public class AlbumService {
         Album album = albumRepository.findByUserId(userId)
                 .orElseThrow(() -> new GeneralException(AlbumErrorStatus._ALBUM_NOT_FOUND));
 
-        if (dto.getAlbumName() == null || dto.getGraduationDate() == null) {
-            throw new GeneralException(AlbumErrorStatus._REQUIRED_FIELDS_MISSING); // ✨ 커스텀 상태코드 정의 필요
+        if (dto.getAlbumName() == null || dto.getAlbumType() == null || dto.getGraduationDate() == null) {
+            throw new GeneralException(AlbumErrorStatus._REQUIRED_FIELDS_MISSING);
         }
 
         album.setGraduationDate(dto.getGraduationDate());
         album.setAlbumName(dto.getAlbumName());
+        album.setAlbumType(dto.getAlbumType());
         album.setDescription(dto.getDescription());
     }
 

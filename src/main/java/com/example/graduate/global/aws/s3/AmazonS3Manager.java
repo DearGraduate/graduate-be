@@ -27,6 +27,8 @@ public class AmazonS3Manager {
     public String uploadFile(String keyName, MultipartFile file){
         ObjectMetadata metadata = new ObjectMetadata();
         metadata.setContentLength(file.getSize());
+        metadata.setContentType(file.getContentType()); //이미지 다운로드 되는 문제 해결 코드
+
         try {
             amazonS3.putObject(new PutObjectRequest(
                     amazonConfig.getBucket(), keyName, file.getInputStream(), metadata));
@@ -37,9 +39,17 @@ public class AmazonS3Manager {
         return amazonS3.getUrl(amazonConfig.getBucket(), keyName).toString();
     }
 
-    public String generateLetterKeyName(Uuid uuid){
-        return amazonConfig.getLetterPath() + "/" + uuid.getUuid();
+    public String generateLetterKeyName(MultipartFile file, Uuid uuid) {
+        String originalFilename = file.getOriginalFilename();
+        String extension = "";
+
+        if (originalFilename != null && originalFilename.contains(".")) {
+            extension = originalFilename.substring(originalFilename.lastIndexOf("."));
+        }
+
+        return amazonConfig.getLetterPath() + "/" + uuid.getUuid() + extension;
     }
+
 
 
     // S3에 저장된 파일 삭제 메서드 - picUrl을 받아서 key 추출 후 삭제

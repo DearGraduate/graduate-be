@@ -27,8 +27,8 @@ public class KakaoOAuthController {
    */
   @PostMapping("/login")
   public ApiResponse<Void> kakaoLogin(
-      @RequestParam(value = "code", required = true) String code,
-      HttpServletResponse response) {
+          @RequestParam(value = "code", required = true) String code,
+          HttpServletResponse response) {
     try {
       String token = kakaoService.getAccessToken(code);
       var userInfo = kakaoService.getUserInfo(token);
