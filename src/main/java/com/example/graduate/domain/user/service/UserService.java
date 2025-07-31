@@ -138,13 +138,19 @@ public class UserService {
    * @param maxAge  쿠키 유효 기간 (초 단위)
    * @return 생성된 ResponseCookie
    */
-  private ResponseCookie createCookie(String key, String value, long maxAge) {
-    return ResponseCookie.from(key, value)
+  private ResponseCookie createCookie(String key, String value, long maxAge, boolean secureCookie) {
+    ResponseCookie.ResponseCookieBuilder builder = ResponseCookie.from(key, value)
         .httpOnly(true)
         .secure(secureCookie)
         .path("/")
-        .maxAge(maxAge)
-        .build();
+        .maxAge(maxAge);
+
+    // prod일 때만 크로스 도메인 문제 해결
+    if (secureCookie) {
+      builder.domain("photory.site");
+      builder.sameSite("None");
+    }
+    return builder.build();
   }
 
   /**
