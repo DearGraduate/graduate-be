@@ -185,12 +185,7 @@ public class UserService {
     String socialId = jwtUtil.getSocialId(refresh);
     redisUtil.deleteData("refresh:" + socialId);
 
-    ResponseCookie expiredCookie = ResponseCookie.from("refreshToken", "")
-        .maxAge(0)
-        .httpOnly(true)
-        .secure(secureCookie)
-        .path("/")
-        .build();
+    ResponseCookie expiredCookie = createCookie(request, "refreshToken", "", 0);
     response.addHeader("Set-Cookie", expiredCookie.toString());
   }
 
@@ -200,6 +195,7 @@ public class UserService {
    * @param response 클라이언트에 만료된 refreshToken 쿠키를 전달하여 삭제 처리
    */
   public void delete(
+      HttpServletRequest request,
       HttpServletResponse response) {
     User user = securityUtil.getCurrentUser();
     String socialId = user.getSocialId();
@@ -216,12 +212,7 @@ public class UserService {
     userRepository.delete(user);
     redisUtil.deleteData("refresh:" + socialId);
 
-    ResponseCookie expiredCookie = ResponseCookie.from("refreshToken", "")
-        .maxAge(0)
-        .httpOnly(true)
-        .secure(secureCookie)
-        .path("/")
-        .build();
+    ResponseCookie expiredCookie = createCookie(request, "refreshToken", "", 0);
     response.addHeader("Set-Cookie", expiredCookie.toString());
   }
 }
