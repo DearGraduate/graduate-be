@@ -47,8 +47,18 @@ public class LetterService {
 
         String picUrl = null;
 
-        // 파일이 있으면 UUID 생성 + S3 업로드 + URL 추출
+        //파일이 있으면 UUID 생성 + S3 업로드 + URL 추출
         if (file != null && !file.isEmpty()) {
+
+            //사진 확장자 검사 로직
+            String originalFilename = file.getOriginalFilename();
+            if(originalFilename !=null){
+                String lowerCaseName = originalFilename.toLowerCase(); //확장자 소문자로 바꿔서 확인하기
+                if (!(lowerCaseName.endsWith(".jpg") || lowerCaseName.endsWith(".jpeg") ||
+                        lowerCaseName.endsWith(".png") )) {
+                    throw new GeneralException(LetterErrorStatus.INVALID_FILE_EXTENSION);
+                }
+            }
             Uuid savedUuid = uuidRepository.save(
                     Uuid.builder()
                             .uuid(UUID.randomUUID().toString())
@@ -83,14 +93,14 @@ public class LetterService {
             throw new GeneralException(LetterErrorStatus.NOT_OWNER_OF_LETTER);
         }
 
-        // 이미지 파일이 새로 들어온 경우 기존 S3 이미지 삭제 후 새로 업로드
+        //이미지 파일이 새로 들어온 경우 기존 S3 이미지 삭제 후 새로 업로드
         if (file != null && !file.isEmpty()) {
             // 기존 이미지가 있으면 삭제
             if (letter.getPicUrl() != null) {
                 amazonS3Manager.deleteFileByUrl(letter.getPicUrl());
             }
 
-            // 새 이미지 업로드
+            //새 이미지 업로드
             Uuid savedUuid = uuidRepository.save(
                     Uuid.builder()
                             .uuid(UUID.randomUUID().toString())
@@ -149,7 +159,7 @@ public class LetterService {
                 .map(LetterResponseDTO::from)
                 .collect(Collectors.toList());
 
-        Long nextLastLetterId = content.isEmpty() ? null : content.get(content.size() - 1).getId();
+        Long nextLastLetterId = content.isEmpty() ? null : content.get(content.size() - 1).getLetterId();
         LocalDateTime nextLastUpdatedAt = content.isEmpty() ? null : content.get(content.size() - 1).getCreatedAt();
 
         return new LetterListResponseDTO(content, isLast, nextLastLetterId, nextLastUpdatedAt);
