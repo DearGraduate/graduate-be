@@ -51,6 +51,15 @@ public class LetterService {
 
         // 파일이 있으면 UUID 생성 + S3 업로드 + URL 추출
         if (file != null && !file.isEmpty()) {
+            //확장자 검사 로직 추가
+            String originalFilename = file.getOriginalFilename();
+            if (originalFilename != null) {
+                String lowerCaseName = originalFilename.toLowerCase();
+                if (!(lowerCaseName.endsWith(".jpg") || lowerCaseName.endsWith(".jpeg") ||
+                        lowerCaseName.endsWith(".png") )) {
+                    throw new GeneralException(LetterErrorStatus.INVALID_FILE_EXTENSION);
+                }
+            }
             Uuid savedUuid = uuidRepository.save(
                     Uuid.builder()
                             .uuid(UUID.randomUUID().toString())
@@ -152,7 +161,7 @@ public class LetterService {
                 .map(LetterResponseDTO::from)
                 .collect(Collectors.toList());
 
-        Long nextLastLetterId = content.isEmpty() ? null : content.get(content.size() - 1).getId();
+        Long nextLastLetterId = content.isEmpty() ? null : content.get(content.size() - 1).getLetterId();
         LocalDateTime nextLastUpdatedAt = content.isEmpty() ? null : content.get(content.size() - 1).getCreatedAt();
 
         return new LetterListResponseDTO(content, isLast, nextLastLetterId, nextLastUpdatedAt);
@@ -195,7 +204,7 @@ public class LetterService {
                 .map(LetterResponseDTO::from)
                 .collect(Collectors.toList());
 
-        Long nextLastLetterId = content.isEmpty() ? null : content.get(content.size() - 1).getId();
+        Long nextLastLetterId = content.isEmpty() ? null : content.get(content.size() - 1).getLetterId();
         LocalDateTime nextLastUpdatedAt = content.isEmpty()
                 ? null
                 : content.get(content.size() - 1).getUpdatedAt() != null
@@ -205,6 +214,5 @@ public class LetterService {
         return new LetterListResponseDTO(content, isLast, nextLastLetterId, nextLastUpdatedAt);
 
     }
-
 
 }
