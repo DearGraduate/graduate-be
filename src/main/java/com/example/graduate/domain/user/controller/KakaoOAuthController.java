@@ -7,6 +7,7 @@ import com.example.graduate.domain.user.exception.UserSuccessStatus;
 import com.example.graduate.global.apiPayload.ApiResponse;
 import com.example.graduate.global.apiPayload.exception.GeneralException;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -28,12 +29,13 @@ public class KakaoOAuthController {
   @PostMapping("/login")
   public ApiResponse<Void> kakaoLogin(
           @RequestParam(value = "code", required = true) String code,
+          HttpServletRequest request,
           HttpServletResponse response) {
     try {
       String token = kakaoService.getAccessToken(code);
       var userInfo = kakaoService.getUserInfo(token);
 
-      userService.loginOrRegister(userInfo, response);
+      userService.loginOrRegister(userInfo, request, response);
       return ApiResponse.of(UserSuccessStatus.SUCCESS_LOGIN);
 
     } catch (Exception e) {

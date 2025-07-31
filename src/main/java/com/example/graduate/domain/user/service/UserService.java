@@ -38,9 +38,10 @@ public class UserService {
    * AccessToken은 Authorization 헤더로, RefreshToken은 HttpOnly 쿠키로 반환됩니다.
    *
    * @param info     카카오 사용자 정보
+   * @param request  클라이언트 요청 (쿠키 포함)
    * @param response 클라이언트에 토큰을 전달할 HttpServletResponse
    */
-  public void loginOrRegister(KakaoUserInfo info, HttpServletResponse response) {
+  public void loginOrRegister(KakaoUserInfo info, HttpServletRequest request, HttpServletResponse response) {
     User user = userRepository.findBySocialId(info.getId())
         .orElseGet(() -> userRepository.save(userMapper.toEntity(info)));
 
@@ -69,7 +70,7 @@ public class UserService {
     );
 
     // refreshToken을 HttpOnly 쿠키에 담아 클라이언트로 전송
-    ResponseCookie refreshCookie = createCookie("refreshToken", refresh, refreshExpirationMs / 1000);
+    ResponseCookie refreshCookie = createCookie(request, "refreshToken", refresh, refreshExpirationMs / 1000);
     response.addHeader("Set-Cookie", refreshCookie.toString());
     response.addHeader("Authorization", "Bearer " + access);
   }
@@ -123,7 +124,7 @@ public class UserService {
     redisUtil.deleteData("refresh:" + socialId);
     redisUtil.setData("refresh:" + socialId, newRefresh, refreshExpiredMs / 1000);
 
-    ResponseCookie refreshCookie = createCookie("refreshToken", newRefresh,
+    ResponseCookie refreshCookie = createCookie(request, "refreshToken", newRefresh,
         refreshExpiredMs / 1000);
 
     response.addHeader("Authorization", "Bearer " + access);
@@ -133,21 +134,25 @@ public class UserService {
   /**
    * 주어진 정보를 기반으로 HttpOnly RefreshToken 쿠키를 생성합니다.
    *
+   * @param request 클라이언트 요청 (쿠키 포함)
    * @param key     쿠키 키
    * @param value   쿠키 값 (refresh token)
    * @param maxAge  쿠키 유효 기간 (초 단위)
    * @return 생성된 ResponseCookie
    */
-  private ResponseCookie createCookie(String key, String value, long maxAge) {
+  private ResponseCookie createCookie(HttpServletRequest request, String key, String value, long maxAge) {
+    String proto = request.getHeader("X-Forwarded-Proto");
+    boolean isSecure = "https".equalsIgnoreCase(proto) || request.isSecure();
+
     ResponseCookie.ResponseCookieBuilder builder = ResponseCookie.from(key, value)
         .httpOnly(true)
-        .secure(secureCookie)
+        .secure(isSecure)
         .path("/")
         .maxAge(maxAge);
 
-    // prod 환경이면 SameSite + domain 설정 추가
-    if (secureCookie) {
-      builder.domain("photory.site");
+    // prod 환경 + 프론트도 배포 환경이면 SameSite + domain 설정 추가
+    if (isSecure) {
+      builder.domain(".photory.site");
       builder.sameSite("None");
     }
 
