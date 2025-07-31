@@ -19,6 +19,8 @@ public enum UserErrorStatus implements BaseErrorCode {
   TOKEN_EXPIRED("AUTH4008", "리프레시 토큰이 만료되었습니다.", HttpStatus.UNAUTHORIZED),
   TOKEN_FAIL("AUTH4009", "토큰 파싱 또는 추출에 실패했습니다.", HttpStatus.BAD_REQUEST),
   INVALID_AUTHENTICATION("AUTH4010", "인증 정보가 유효하지 않습니다.", HttpStatus.UNAUTHORIZED),
+
+  UNLINK_FAILED("USER4011", "카카오 연결 해제에 실패했습니다.", HttpStatus.BAD_REQUEST),
   ;
 
   private final String code;

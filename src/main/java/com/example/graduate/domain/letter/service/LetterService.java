@@ -13,12 +13,13 @@ import com.example.graduate.domain.letter.domain.letterStatus.LetterErrorStatus;
 import com.example.graduate.global.aws.s3.AmazonS3Manager;
 import com.example.graduate.global.aws.s3.Uuid;
 import com.example.graduate.global.aws.s3.UuidRepository;
+import com.example.graduate.global.redis.RedisUtil;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-
+import org.springframework.data.domain.PageRequest;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -31,6 +32,7 @@ public class LetterService {
     private final LetterRepository letterRepository;
     private final AlbumRepository albumRepository;
     private final SecurityUtil securityUtil;
+    private final RedisUtil redisUtil;
 
     //s3 관련 코드 추가
     private final AmazonS3Manager amazonS3Manager;
@@ -47,25 +49,15 @@ public class LetterService {
 
         String picUrl = null;
 
-        //파일이 있으면 UUID 생성 + S3 업로드 + URL 추출
+        // 파일이 있으면 UUID 생성 + S3 업로드 + URL 추출
         if (file != null && !file.isEmpty()) {
-
-            //사진 확장자 검사 로직
-            String originalFilename = file.getOriginalFilename();
-            if(originalFilename !=null){
-                String lowerCaseName = originalFilename.toLowerCase(); //확장자 소문자로 바꿔서 확인하기
-                if (!(lowerCaseName.endsWith(".jpg") || lowerCaseName.endsWith(".jpeg") ||
-                        lowerCaseName.endsWith(".png") )) {
-                    throw new GeneralException(LetterErrorStatus.INVALID_FILE_EXTENSION);
-                }
-            }
             Uuid savedUuid = uuidRepository.save(
                     Uuid.builder()
                             .uuid(UUID.randomUUID().toString())
                             .build()
             );
 
-            String keyName = amazonS3Manager.generateLetterKeyName(savedUuid);
+            String keyName = amazonS3Manager.generateLetterKeyName(file, savedUuid);
             picUrl = amazonS3Manager.uploadFile(keyName, file);
         }
 
@@ -81,6 +73,7 @@ public class LetterService {
                 .userId(userId)
                 .build();
         letterRepository.save(letter);
+        redisUtil.increment("project:letter:count");
     }
 
     //축하글 수정
@@ -93,20 +86,20 @@ public class LetterService {
             throw new GeneralException(LetterErrorStatus.NOT_OWNER_OF_LETTER);
         }
 
-        //이미지 파일이 새로 들어온 경우 기존 S3 이미지 삭제 후 새로 업로드
+        // 이미지 파일이 새로 들어온 경우 기존 S3 이미지 삭제 후 새로 업로드
         if (file != null && !file.isEmpty()) {
             // 기존 이미지가 있으면 삭제
             if (letter.getPicUrl() != null) {
                 amazonS3Manager.deleteFileByUrl(letter.getPicUrl());
             }
 
-            //새 이미지 업로드
+            // 새 이미지 업로드
             Uuid savedUuid = uuidRepository.save(
                     Uuid.builder()
                             .uuid(UUID.randomUUID().toString())
                             .build()
             );
-            String keyName = amazonS3Manager.generateLetterKeyName(savedUuid);
+            String keyName = amazonS3Manager.generateLetterKeyName(file, savedUuid);
             String picUrl = amazonS3Manager.uploadFile(keyName, file);
             letter.setPicUrl(picUrl);
         }
@@ -138,7 +131,7 @@ public class LetterService {
         letterRepository.delete(letter);
     }
 
-    //축하글 가져오기
+    //축하글 전체 가져오기(이건 사용하지 않습니다)
     public LetterListResponseDTO getLetters(String limit, LocalDateTime lastUpdatedAt, Long lastLetterId) {
         int fetchCount = "all".equalsIgnoreCase(limit) ? Integer.MAX_VALUE : Integer.parseInt(limit);
         List<Letter> letters;
@@ -159,28 +152,59 @@ public class LetterService {
                 .map(LetterResponseDTO::from)
                 .collect(Collectors.toList());
 
-        Long nextLastLetterId = content.isEmpty() ? null : content.get(content.size() - 1).getLetterId();
+        Long nextLastLetterId = content.isEmpty() ? null : content.get(content.size() - 1).getId();
         LocalDateTime nextLastUpdatedAt = content.isEmpty() ? null : content.get(content.size() - 1).getCreatedAt();
 
         return new LetterListResponseDTO(content, isLast, nextLastLetterId, nextLastUpdatedAt);
     }
 
     //특정 앨범에 대한 축하글 조회
-    public LetterListResponseDTO getLettersByAlbum(Long albumId, String limit) {
+    public LetterListResponseDTO getLettersByAlbum(Long albumId, String limit, LocalDateTime lastUpdatedAt, Long lastLetterId) {
         int fetchCount = "all".equalsIgnoreCase(limit) ? Integer.MAX_VALUE : Integer.parseInt(limit);
+        int queryCount = fetchCount + 1;
+        Long userId = getCurrentUserId();
 
-        List<Letter> letters = letterRepository.findByAlbumIdOrderByUpdatedAtDesc(albumId, fetchCount);
+        boolean isOwner = albumRepository.findById(albumId)
+                .map(album -> album.getUserId().equals(userId))
+                .orElseThrow(() -> new GeneralException(LetterErrorStatus.ALBUM_NOT_FOUND));
+
+        List<Letter> letters;
+
+        if (isOwner) {
+            // 앨범 주인은 모든 글 조회
+            if (lastUpdatedAt == null || lastLetterId == null) {
+                letters = letterRepository.findByAlbumIdOrderByUpdatedAtDesc(albumId, queryCount);
+            } else {
+                letters = letterRepository.findByAlbumIdAndUpdatedAtAndIdBeforeOrderByUpdatedAtDesc(albumId, lastUpdatedAt, lastLetterId, queryCount);
+            }
+        } else {
+            // 앨범 주인이 아닌 경우: 본인 글 + 공개된 글만
+            if (lastUpdatedAt == null || lastLetterId == null) {
+                letters = letterRepository.findVisibleLettersByAlbum(albumId, userId, PageRequest.of(0, queryCount));
+            } else {
+                letters = letterRepository.findVisibleLettersByAlbumAndCursor(albumId, userId, lastUpdatedAt, lastLetterId, PageRequest.of(0, queryCount));
+            }
+        }
+
+        boolean isLast = letters.size() <= fetchCount;
+        if (!isLast) {
+            letters = letters.subList(0, fetchCount);
+        }
 
         List<LetterResponseDTO> content = letters.stream()
                 .map(LetterResponseDTO::from)
                 .collect(Collectors.toList());
 
-        return new LetterListResponseDTO(content, true, null, null); // isLast = true로 고정
+        Long nextLastLetterId = content.isEmpty() ? null : content.get(content.size() - 1).getId();
+        LocalDateTime nextLastUpdatedAt = content.isEmpty()
+                ? null
+                : content.get(content.size() - 1).getUpdatedAt() != null
+                ? content.get(content.size() - 1).getUpdatedAt()
+                : content.get(content.size() - 1).getCreatedAt();
+
+        return new LetterListResponseDTO(content, isLast, nextLastLetterId, nextLastUpdatedAt);
+
     }
-
-
-
-
 
 
 }

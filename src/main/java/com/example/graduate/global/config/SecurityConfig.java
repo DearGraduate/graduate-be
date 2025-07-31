@@ -36,6 +36,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/test/permit-all").permitAll()
                         .requestMatchers("/api/albums/**").permitAll()
                         .requestMatchers("/api/auth/kakao/**").permitAll()
+                        .requestMatchers("/api/project/**").permitAll()
                         .anyRequest().authenticated())
 
             .addFilterBefore(new JwtAuthenticationFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class);

@@ -32,6 +32,10 @@ public class Album extends BaseEntity {
     private String albumName;
 
     @Setter
+    @Column(length = 15)
+    private String albumType;
+
+    @Setter
     @Column(length = 20)
     private String description;
 }

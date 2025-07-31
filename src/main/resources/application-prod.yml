@@ -17,14 +17,14 @@ spring:
   #redis
   data:
     redis:
-      host: ${DEV_REDIS_HOST}
-      port: ${DEV_REDIS_PORT}
+      host: ${PROD_REDIS_HOST}
+      port: ${PROD_REDIS_PORT}
   #mysql
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://${DEV_MYSQL_HOST}:3306/graduate?serverTimezone=Asia/Seoul
-    username: ${DEV_MYSQL_USERNAME}
-    password: ${DEV_MYSQL_PASSWORD}
+    url: jdbc:mysql://${PROD_MYSQL_HOST}:3306/graduate?serverTimezone=Asia/Seoul
+    username: ${PROD_MYSQL_USERNAME}
+    password: ${PROD_MYSQL_PASSWORD}
   sql:
     init:
       mode: never
@@ -39,6 +39,22 @@ spring:
           auto: update
         default_batch_fetch_size: 1000
 
+
+#monitoring
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      show-details: always
+    prometheus:
+      enabled: true
+  metrics:
+    tags:
+      application: graduate
+
 oauth:
   kakao:
     client-id: ${KAKAO_CLIENT_ID}
@@ -46,9 +62,10 @@ oauth:
     redirect-uri: ${KAKAO_REDIRECT_URI}
     token-uri: https://kauth.kakao.com/oauth/token
     user-info-uri: https://kapi.kakao.com/v2/user/me
+    admin-key: ${KAKAO_ADMIN_KEY}
 
 cookie:
-  secure: false
+  secure: true
 
 cloud:
   aws:
