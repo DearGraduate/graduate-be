@@ -139,12 +139,19 @@ public class UserService {
    * @return 생성된 ResponseCookie
    */
   private ResponseCookie createCookie(String key, String value, long maxAge) {
-    return ResponseCookie.from(key, value)
+    ResponseCookie.ResponseCookieBuilder builder = ResponseCookie.from(key, value)
         .httpOnly(true)
         .secure(secureCookie)
         .path("/")
-        .maxAge(maxAge)
-        .build();
+        .maxAge(maxAge);
+
+    // prod 환경이면 SameSite + domain 설정 추가
+    if (secureCookie) {
+      builder.domain("photory.site");
+      builder.sameSite("None");
+    }
+
+    return builder.build();
   }
 
   /**
