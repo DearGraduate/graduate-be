@@ -15,6 +15,8 @@ public class LetterResponseDTO {
     private String message;
     private Boolean isPublic;
     private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+
 
     public static LetterResponseDTO from(Letter letter) {
         return LetterResponseDTO.builder()
@@ -24,6 +26,7 @@ public class LetterResponseDTO {
                 .message(letter.getMessage())
                 .isPublic(letter.getIsPublic())
                 .createdAt(letter.getCreatedAt())
+                .updatedAt(letter.getUpdatedAt())
                 .build();
     }
 
