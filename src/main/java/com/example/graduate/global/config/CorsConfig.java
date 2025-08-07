@@ -15,8 +15,8 @@ public class CorsConfig {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(true); // 쿠키, 인증정보 포함 여부
         config.setAllowedOrigins(List.of(
-
                 "http://localhost:3000",
+                "https://graduate-web-coral.vercel.app",
                 "http://photory.site",
                 "https://photory.site",
                 "http://api.photory.site",
