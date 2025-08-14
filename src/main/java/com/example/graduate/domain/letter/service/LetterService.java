@@ -49,25 +49,34 @@ public class LetterService {
 
         String picUrl = null;
 
-        // 파일이 있으면 UUID 생성 + S3 업로드 + URL 추출
+        //파일이 있으면 UUID 생성 + S3 업로드 + URL 추출
         if (file != null && !file.isEmpty()) {
             //확장자 검사 로직 추가
             String originalFilename = file.getOriginalFilename();
             if (originalFilename != null) {
                 String lowerCaseName = originalFilename.toLowerCase();
-                if (!(lowerCaseName.endsWith(".jpg") || lowerCaseName.endsWith(".jpeg") ||
-                        lowerCaseName.endsWith(".png") )) {
-                    throw new GeneralException(LetterErrorStatus.INVALID_FILE_EXTENSION);
+
+                //default 이미지인 경우 s3 업로드 하지 않기
+                if (lowerCaseName.equals("defaultimage1") ||
+                        lowerCaseName.equals("defaultimage2") ||
+                        lowerCaseName.equals("defaultimage3")) {
+                    picUrl = lowerCaseName; // DB에 그대로 저장
+                } else {
+                    // 확장자 검사
+                    if (!(lowerCaseName.endsWith(".jpg") || lowerCaseName.endsWith(".jpeg") ||
+                            lowerCaseName.endsWith(".png"))) {
+                        throw new GeneralException(LetterErrorStatus.INVALID_FILE_EXTENSION);
+                    }
+                    // S3 업로드
+                    Uuid savedUuid = uuidRepository.save(
+                            Uuid.builder()
+                                    .uuid(UUID.randomUUID().toString())
+                                    .build()
+                    );
+                    String keyName = amazonS3Manager.generateLetterKeyName(file, savedUuid);
+                    picUrl = amazonS3Manager.uploadFile(keyName, file);
                 }
             }
-            Uuid savedUuid = uuidRepository.save(
-                    Uuid.builder()
-                            .uuid(UUID.randomUUID().toString())
-                            .build()
-            );
-
-            String keyName = amazonS3Manager.generateLetterKeyName(file, savedUuid);
-            picUrl = amazonS3Manager.uploadFile(keyName, file);
         }
 
         //추가
