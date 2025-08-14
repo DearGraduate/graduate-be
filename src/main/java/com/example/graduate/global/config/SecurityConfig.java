@@ -37,11 +37,7 @@ public class SecurityConfig {
                         .requestMatchers("/actuator/prometheus").permitAll()
                         .requestMatchers("/api/test/permit-all").permitAll()
                         .requestMatchers("/api/albums/**").permitAll()
-<<<<<<< HEAD
                         .requestMatchers("/api/auth/kakao/**", "/api/auth/refresh").permitAll()
-=======
-                        .requestMatchers("/api/auth/kakao/**", "api/auth/refresh").permitAll()
->>>>>>> develop
                         .requestMatchers("/api/project/**").permitAll()
                         .anyRequest().authenticated())
 
