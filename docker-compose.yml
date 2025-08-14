@@ -30,7 +30,7 @@ services:
     ports:
       - 8080:8080
     environment:
-      SPRING_PROFILES_ACTIVE: prod  # Spring 프로파일을 prod로 설정
+        SPRING_PROFILES_ACTIVE: prod  # Spring 프로파일을 prod로 설정
     depends_on:
       mysql:
         condition: service_healthy

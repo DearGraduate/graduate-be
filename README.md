@@ -3,11 +3,22 @@
 사용자는 웹 페이지에서 졸업 축하 메시지와 사진을 업로드할 수 있으며, 졸업 당사자는 졸업식 당일에 축하 게시물들을 모아 깔끔하게 편집된 PDF 파일로 다운로드할 수 있습니다. 이를 통해 졸업의 소중한 추억을 디지털로 보관하고, 간편하게 공유할 수 있습니다.
 <br><br>
 
+### PM / Design
+|<img src="https://avatars.githubusercontent.com/u/114335932?v=4" width="150" height="150"/>|<img src="https://avatars.githubusercontent.com/u/114573447?v=4" width="150" height="150"/>|
+|:-:|:-:|
+|[@lanapi](https://github.com/lanapi) 송효재 |박성민 |
+<br>
+
+### Forntend
+|<img src="https://avatars.githubusercontent.com/u/146899497?v=4" width="150" height="150"/>|<img src="https://avatars.githubusercontent.com/u/147235267?v=4" width="150" height="150"/>|<img src="https://avatars.githubusercontent.com/u/139226103?v=4" width="150" height="150"/>|<img src="https://avatars.githubusercontent.com/u/114573447?v=4" width="150" height="150"/>|
+|:-:|:-:|:-:|:-:|
+|[@joyeeon](https://github.com/joyeeon) 조희연 |[@PocheonLim](https://github.com/PocheonLim) 임성훈 |[@shail1027](https://github.com/shail1027) 이예빈 |[@Simmee02](https://github.com/Simmee02) 심지영|
+<br>
+
 ### Backend  
 |<img src="https://avatars.githubusercontent.com/u/113746577?v=4" width="150" height="150"/>|<img src="https://avatars.githubusercontent.com/u/162952415?v=4" width="150" height="150"/>|<img src="https://avatars.githubusercontent.com/u/143693285?v=4" width="150" height="150"/>|<img src="https://avatars.githubusercontent.com/u/138271153?v=4" width="150" height="150"/>|
 |:-:|:-:|:-:|:-:|
 |[@kimjy0117](https://github.com/kimjy0117) 김주영 |[@naooung](https://github.com/naooung) 김나경 |[@cinsy26](https://github.com/cinsy26) 세연 |[@sinyoung6491](https://github.com/sinyoung6491) 신영 |
-
 <br>
 
 ## Stacks
