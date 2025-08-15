@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -45,7 +46,7 @@ public class AuthController {
   @Operation(
       summary = "회원 탈퇴",
       description = "회원 탈퇴 처리 후 토큰 및 쿠키를 삭제합니다.")
-  @PostMapping("/delete")
+  @PostMapping(value = "/delete")
   public ApiResponse<Void> delete(HttpServletResponse response) {
     userService.delete(response);
 
