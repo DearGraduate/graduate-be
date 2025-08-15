@@ -50,10 +50,10 @@ public class UserService {
         user.getSocialId(),
         user.getName(),
         null,
-        1000 * 60 * 60L // 예시: 1시간
+        1000 * 60 * 60 * 24 * 30L // 예시: 30일
     );
 
-    long refreshExpirationMs = 1000L * 60 * 60 * 24 * 7; // 7일
+    long refreshExpirationMs = 1000L * 60 * 60 * 24 * 30; // 30일
     String refresh = jwtUtil.createJwt(
         "refresh",
         user.getSocialId(),
