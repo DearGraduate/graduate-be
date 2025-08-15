@@ -91,6 +91,16 @@ public class AlbumService {
         albumRepository.delete(album);
     }
 
+    @Transactional
+    public void deleteAlbumIfExists() {
+        Long userId = getCurrentUserId();
+
+        albumRepository.findByUserId(userId).ifPresent(album -> {
+            letterRepository.deleteAllByAlbumId(album.getId());
+            albumRepository.delete(album);
+        });
+    }
+
     public AlbumResponseDTO getAlbum() {
         Long userId = getCurrentUserId();
 

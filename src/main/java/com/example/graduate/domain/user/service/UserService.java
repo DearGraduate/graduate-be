@@ -1,5 +1,7 @@
 package com.example.graduate.domain.user.service;
 
+import static org.hibernate.query.sqm.tree.SqmNode.log;
+
 import com.example.graduate.domain.album.service.AlbumService;
 import com.example.graduate.domain.user.dto.request.KakaoUserInfo;
 import com.example.graduate.domain.user.entity.User;
@@ -14,12 +16,15 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Service;
 import com.example.graduate.global.redis.RedisUtil;
+import org.springframework.web.client.HttpClientErrorException;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class UserService {
   private final UserRepository userRepository;
@@ -190,24 +195,35 @@ public class UserService {
   }
 
   /**
-   * 회원 탈퇴 처리: 사용자 정보를 삭제하고 RefreshToken을 제거합니다.
+   * 회원 탈퇴 처리
    *
-   * @param response 클라이언트에 만료된 refreshToken 쿠키를 전달하여 삭제 처리
+   * @param response 만료된 refreshToken 쿠키를 추가하기 위한 HTTP 응답 객체
+   * @throws GeneralException 카카오 연결 해제에 실패(이미 해제된 경우 제외)한 경우
    */
-  public void delete(
-      HttpServletResponse response) {
+  public void delete(HttpServletResponse response) {
     User user = securityUtil.getCurrentUser();
     String socialId = user.getSocialId();
 
     // 카카오 연결 해제
     try {
       kakaoOAuthService.unlinkKakao(socialId);
-    } catch (Exception e) {
-      throw new GeneralException(UserErrorStatus.UNLINK_FAILED);
+    } catch (HttpClientErrorException e) {
+      String body = e.getResponseBodyAsString();
+      int status = e.getStatusCode().value();
+      log.warn("Kakao unlink failed: status={}, body={}", status, body);
+
+      // 이미 해제/미등록 사용자 멱등 처리
+      if (!(status == 400 && body != null &&
+          (body.contains("NotRegisteredUser") ||
+              body.contains("already") ||
+              body.contains("unlinked")))) {
+        throw new GeneralException(UserErrorStatus.UNLINK_FAILED);
+      }
+      log.info("Kakao already unlinked. Proceed.");
     }
 
     // 사용자 로그인 정보를 사용하여 앨범 삭제 (사용자 삭제보다 먼저 호출)
-    albumService.deleteAlbum();
+    albumService.deleteAlbumIfExists();
     userRepository.delete(user);
     redisUtil.deleteData("refresh:" + socialId);
 
