@@ -86,10 +86,7 @@ public class UserService {
     // 앨범 존재 여부 확인
     Optional<Long> albumIdOpt = albumRepository.findByUserId(user.getId()).map(Album::getId);
 
-    return LoginResponseDTO.builder()
-        .albumExists(albumIdOpt.isPresent())
-        .albumId(albumIdOpt.orElse(null))
-        .build();
+    return userMapper.toLoginResponse(albumIdOpt);
   }
 
   /**
