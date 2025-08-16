@@ -2,7 +2,10 @@ package com.example.graduate.domain.user.service;
 
 import static org.hibernate.query.sqm.tree.SqmNode.log;
 
+import com.example.graduate.domain.album.domain.Album;
+import com.example.graduate.domain.album.repository.AlbumRepository;
 import com.example.graduate.domain.album.service.AlbumService;
+import com.example.graduate.domain.user.dto.reponse.LoginResponseDTO;
 import com.example.graduate.domain.user.dto.request.KakaoUserInfo;
 import com.example.graduate.domain.user.entity.User;
 import com.example.graduate.domain.user.exception.UserErrorStatus;
@@ -15,6 +18,7 @@ import com.example.graduate.global.security.CustomUserDetails;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,6 +32,7 @@ import org.springframework.web.client.HttpClientErrorException;
 @RequiredArgsConstructor
 public class UserService {
   private final UserRepository userRepository;
+  private final AlbumRepository albumRepository;
   private final AlbumService albumService;
   private final UserMapper userMapper;
   private final JwtUtil jwtUtil;
@@ -45,7 +50,7 @@ public class UserService {
    * @param info     카카오 사용자 정보
    * @param response 클라이언트에 토큰을 전달할 HttpServletResponse
    */
-  public void loginOrRegister(KakaoUserInfo info, HttpServletResponse response) {
+  public LoginResponseDTO loginOrRegister(KakaoUserInfo info, HttpServletResponse response) {
     User user = userRepository.findBySocialId(info.getId())
         .orElseGet(() -> userRepository.save(userMapper.toEntity(info)));
 
@@ -77,6 +82,14 @@ public class UserService {
     ResponseCookie refreshCookie = createCookie("refreshToken", refresh, refreshExpirationMs / 1000);
     response.addHeader("Set-Cookie", refreshCookie.toString());
     response.addHeader("Authorization", "Bearer " + access);
+
+    // 앨범 존재 여부 확인
+    Optional<Long> albumIdOpt = albumRepository.findByUserId(user.getId()).map(Album::getId);
+
+    return LoginResponseDTO.builder()
+        .albumExists(albumIdOpt.isPresent())
+        .albumId(albumIdOpt.orElse(null))
+        .build();
   }
 
   /**
