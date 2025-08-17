@@ -59,5 +59,13 @@ public class AlbumController {
                 .body(ApiResponse.of(AlbumSuccessStatus._GET_ALBUM_SUCCESS, album));
     }
 
+    @Operation(summary = "앨범 ID로 조회")
+    @GetMapping("/{albumId}")
+    public ResponseEntity<ApiResponse<AlbumResponseDTO>> getAlbumById(@PathVariable Long albumId) {
+        AlbumResponseDTO album = albumService.getAlbumById(albumId);
+        return ResponseEntity
+                .status(AlbumSuccessStatus._GET_ALBUM_SUCCESS.getHttpStatus())
+                .body(ApiResponse.of(AlbumSuccessStatus._GET_ALBUM_SUCCESS, album));
+    }
 
 }
