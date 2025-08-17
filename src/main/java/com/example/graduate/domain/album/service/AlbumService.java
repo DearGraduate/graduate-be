@@ -116,4 +116,18 @@ public class AlbumService {
                 .build();
     }
 
+    public AlbumResponseDTO getAlbumById(Long albumId) {
+        Album album = albumRepository.findById(albumId)
+                .orElseThrow(() -> new GeneralException(AlbumErrorStatus._ALBUM_NOT_FOUND));
+
+        return AlbumResponseDTO.builder()
+                .id(album.getId())
+                .albumName(album.getAlbumName())
+                .albumType(album.getAlbumType())
+                .description(album.getDescription())
+                .graduationDate(album.getGraduationDate())
+                .createdAt(album.getCreatedAt())
+                .build();
+    }
+
 }
