@@ -110,6 +110,7 @@ public class AlbumService {
         return AlbumResponseDTO.builder()
                 .id(album.getId())
                 .albumName(album.getAlbumName())
+                .albumType(album.getAlbumType())
                 .description(album.getDescription())
                 .graduationDate(album.getGraduationDate())
                 .createdAt(album.getCreatedAt())
