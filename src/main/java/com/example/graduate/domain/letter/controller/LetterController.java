@@ -91,4 +91,18 @@ public class LetterController {
     }
 
 
+    //홈화면 특정 앨범 축하글 가져오기
+    @Operation(summary = "홈화면에서 특정 앨범의 축하글 전체 조회", description = "홈화면에서 특정 앨범 ID에 해당하는 축하글을 최신순으로 조회합니다.")
+    @GetMapping("/home/albums/{albumId}/letters")
+    public ApiResponse<?> getHomeLettersByAlbum(
+            @PathVariable Long albumId,
+            @RequestParam String limit,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime lastUpdatedAt,
+            @RequestParam(required = false) Long lastLetterId
+    ) {
+        LetterListResponseDTO result = letterService.getLettersByAlbum(albumId, limit, lastUpdatedAt, lastLetterId);
+        return ApiResponse.of(LetterSuccessStatus.READ_SUCCESS, result);
+    }
+
+
 }
