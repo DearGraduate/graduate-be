@@ -17,8 +17,8 @@ public class CorsConfig {
         config.setAllowedOrigins(List.of(
                 "http://localhost:3000",
                 "https://graduate-web-coral.vercel.app",
-                "http://photory.site",
                 "https://photory.site",
+                "https://www.photory.site",
                 "http://api.photory.site",
                 "https://api.photory.site"));
         config.addAllowedHeader("*"); // 모든 헤더 허용
