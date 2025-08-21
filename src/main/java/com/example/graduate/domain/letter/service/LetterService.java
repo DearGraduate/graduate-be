@@ -22,6 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.data.domain.PageRequest;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -42,46 +43,72 @@ public class LetterService {
         return securityUtil.getCurrentUser().getId();
     }
 
+    //기본 이미지 여부 확인(생성, 수정)
+    private boolean isDefaultImage(String lowerName) {
+        return lowerName.equals("defaultimage1")
+                || lowerName.equals("defaultimage2")
+                || lowerName.equals("defaultimage3");
+    }
+
+    //확장자 필터링(생성, 수정)
+    private boolean hasAllowedExtension(String lowerName) {
+        return lowerName.endsWith(".jpg")
+                || lowerName.endsWith(".jpeg")
+                || lowerName.endsWith(".png");
+    }
+
+    //저장된 picUrl이 기본 이미지 식별자인지 확인(수정)
+    private boolean isStoredDefaultImage(String picUrl) {
+        if (picUrl == null) return false;
+        return isDefaultImage(picUrl.toLowerCase(Locale.ROOT));
+    }
+
+    //url 판별용(수정, 삭제)
+    private boolean isUrl(String value) {
+        if (value == null) return false;
+        String v = value.toLowerCase(Locale.ROOT);
+        return v.startsWith("http://") || v.startsWith("https://");
+    }
+
+    //이미지 처리
+    private String handlePicUrl(MultipartFile file) {
+        if (file == null || file.isEmpty()) return null;
+
+        String originalFilename = file.getOriginalFilename();
+        if (originalFilename == null) return null;
+
+        String lowerName = originalFilename.toLowerCase(Locale.ROOT);
+
+        // 기본 이미지면 업로드 생략
+        if (isDefaultImage(lowerName)) {
+            return lowerName; // DB에는 기본 이미지 식별자 저장
+        }
+
+        // 확장자 화이트리스트 검사
+        if (!hasAllowedExtension(lowerName)) {
+            throw new GeneralException(LetterErrorStatus.INVALID_FILE_EXTENSION);
+        }
+
+        // S3 업로드
+        Uuid savedUuid = uuidRepository.save(
+                Uuid.builder().uuid(UUID.randomUUID().toString()).build()
+        );
+        String keyName = amazonS3Manager.generateLetterKeyName(file, savedUuid);
+        return amazonS3Manager.uploadFile(keyName, file);
+    }
+
     @Transactional
-    public void createLetter(Long albumId, LetterCreateRequestDTO requestDTO, MultipartFile file){
+    public void createLetter(Long albumId, LetterCreateRequestDTO requestDTO, MultipartFile file) {
         albumRepository.findById(albumId)
                 .orElseThrow(() -> new GeneralException(LetterErrorStatus.ALBUM_NOT_FOUND));
 
-        String picUrl = null;
+        //이미지 처리
+        String picUrl = handlePicUrl(file);
 
-        //파일이 있으면 UUID 생성 + S3 업로드 + URL 추출
-        if (file != null && !file.isEmpty()) {
-            //확장자 검사 로직 추가
-            String originalFilename = file.getOriginalFilename();
-            if (originalFilename != null) {
-                String lowerCaseName = originalFilename.toLowerCase();
-
-                //default 이미지인 경우 s3 업로드 하지 않기
-                if (lowerCaseName.equals("defaultimage1") ||
-                        lowerCaseName.equals("defaultimage2") ||
-                        lowerCaseName.equals("defaultimage3")) {
-                    picUrl = lowerCaseName; // DB에 그대로 저장
-                } else {
-                    // 확장자 검사
-                    if (!(lowerCaseName.endsWith(".jpg") || lowerCaseName.endsWith(".jpeg") ||
-                            lowerCaseName.endsWith(".png"))) {
-                        throw new GeneralException(LetterErrorStatus.INVALID_FILE_EXTENSION);
-                    }
-                    // S3 업로드
-                    Uuid savedUuid = uuidRepository.save(
-                            Uuid.builder()
-                                    .uuid(UUID.randomUUID().toString())
-                                    .build()
-                    );
-                    String keyName = amazonS3Manager.generateLetterKeyName(file, savedUuid);
-                    picUrl = amazonS3Manager.uploadFile(keyName, file);
-                }
-            }
-        }
-
-        //추가
+        //작성자 가져오기
         Long userId = getCurrentUserId();
 
+        //저장
         Letter letter = Letter.builder()
                 .writerName(requestDTO.getWriterName())
                 .message(requestDTO.getMessage())
@@ -91,35 +118,36 @@ public class LetterService {
                 .userId(userId)
                 .build();
         letterRepository.save(letter);
+
+        //개수 카운트
         redisUtil.increment("project:letter:count");
     }
+
+
 
     //축하글 수정
     @Transactional
     public void updateLetter(Long letterId, LetterUpdateRequestDTO requestDTO, MultipartFile file) {
+        //letter 존재 여부 확인
         Letter letter = letterRepository.findById(letterId)
                 .orElseThrow(() -> new GeneralException(LetterErrorStatus.LETTER_NOT_FOUND));
 
+        //letter 소유자 확인
         if (!letter.getUserId().equals(getCurrentUserId())) {
             throw new GeneralException(LetterErrorStatus.NOT_OWNER_OF_LETTER);
         }
 
-        // 이미지 파일이 새로 들어온 경우 기존 S3 이미지 삭제 후 새로 업로드
+        //이미지 파일이 새로 들어온 경우 기존 S3 이미지 삭제 후 새로 업로드
         if (file != null && !file.isEmpty()) {
-            // 기존 이미지가 있으면 삭제
-            if (letter.getPicUrl() != null) {
+
+            //기존 이미지가 URL로 저장되어 있다면(=기본 이미지 식별자 아님) S3에서 삭제
+            if (letter.getPicUrl() != null && !isStoredDefaultImage(letter.getPicUrl()) && isUrl(letter.getPicUrl())) {
                 amazonS3Manager.deleteFileByUrl(letter.getPicUrl());
             }
 
-            // 새 이미지 업로드
-            Uuid savedUuid = uuidRepository.save(
-                    Uuid.builder()
-                            .uuid(UUID.randomUUID().toString())
-                            .build()
-            );
-            String keyName = amazonS3Manager.generateLetterKeyName(file, savedUuid);
-            String picUrl = amazonS3Manager.uploadFile(keyName, file);
-            letter.setPicUrl(picUrl);
+            //생성 로직과 동일한 규칙으로 이미지 업로드
+            String newPicUrl = handlePicUrl(file);
+            letter.setPicUrl(newPicUrl);
         }
 
         if (requestDTO.getWriterName() != null) {
@@ -139,12 +167,29 @@ public class LetterService {
     //축하글 삭제
     @Transactional
     public void deleteLetter(Long letterId) {
+        //축하글 존재하는지 확인
         Letter letter = letterRepository.findById(letterId)
                 .orElseThrow(() -> new GeneralException(LetterErrorStatus.LETTER_NOT_FOUND));
 
-        if (!letter.getUserId().equals(getCurrentUserId())) {
+        Long currentUserId = getCurrentUserId();
+
+        //삭제 권한 있는 사람인지 확인(작성자, 앨범 소유자)
+        boolean isWriter = letter.getUserId().equals(currentUserId);
+        boolean isAlbumOwner = albumRepository.findById(letter.getAlbumId())
+                .map(a -> a.getUserId().equals(currentUserId))
+            .orElseThrow(() -> new GeneralException(LetterErrorStatus.ALBUM_NOT_FOUND));
+
+
+        if (!isWriter && !isAlbumOwner) {
             throw new GeneralException(LetterErrorStatus.NOT_OWNER_OF_LETTER);
         }
+
+        //s3에서 이미지 삭제
+        String picUrl = letter.getPicUrl();
+        if (isUrl(picUrl)) {
+            amazonS3Manager.deleteFileByUrl(picUrl);
+        }
+
 
         letterRepository.delete(letter);
     }

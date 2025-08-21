@@ -8,7 +8,7 @@ import org.springframework.http.HttpStatus;
 @Getter
 public enum LetterErrorStatus implements BaseErrorCode {
 
-    // 예시 에러 코드들(해당 축하글 없음, 앨범 없음, 로그인 필요함, 서버 오류, 사용자 에러, 요청 형식 에러,,이거면 되나)
+    //예시 에러 코드들(해당 축하글 없음, 앨범 없음, 로그인 필요함, 서버 오류, 사용자 에러, 요청 형식 에러,,이거면 되나)
     LETTER_NOT_FOUND(HttpStatus.NOT_FOUND, "LETTER404", "해당 축하글을 찾을 수 없습니다."),
     ALBUM_NOT_FOUND(HttpStatus.NOT_FOUND, "ALBUM404", "해당 앨범을 찾을 수 없습니다."),
     MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "MEMBER404", "사용자를 찾을 수 없습니다."),
