@@ -112,6 +112,25 @@ public interface LetterRepository extends JpaRepository<Letter, Long> {
             Pageable pageable
     );
 
+
+    //홈화면 letter 가져오기
+    // 1) 첫 페이지: 공개글만 최신순 + 페이지 사이즈 지정
+    List<Letter> findByAlbumIdAndIsPublicTrueOrderByUpdatedAtDesc(Long albumId, Pageable pageable);
+
+    // 2) 다음 페이지: 공개글만 + 커서 조건 (updatedAt DESC, tie-breaker: letterId DESC)
+    @Query("""
+       SELECT l
+       FROM Letter l
+       WHERE l.albumId = :albumId
+         AND l.isPublic = true
+         AND (l.updatedAt < :lastUpdatedAt
+              OR (l.updatedAt = :lastUpdatedAt AND l.letterId < :lastLetterId))
+       ORDER BY l.updatedAt DESC, l.letterId DESC
+       """)
+    List<Letter> findPublicLettersByAlbumAndCursor(@Param("albumId") Long albumId,
+                                                   @Param("lastUpdatedAt") LocalDateTime lastUpdatedAt,
+                                                   @Param("lastLetterId") Long lastLetterId,
+                                                   Pageable pageable);
 }
 
 
