@@ -45,9 +45,9 @@ public class LetterService {
 
     //기본 이미지 여부 확인(생성, 수정)
     private boolean isDefaultImage(String lowerName) {
-        return lowerName.equals("defaultimage1")
-                || lowerName.equals("defaultimage2")
-                || lowerName.equals("defaultimage3");
+        return lowerName.equals("defaultImage1")
+                || lowerName.equals("defaultImage2")
+                || lowerName.equals("defaultImage3");
     }
 
     //확장자 필터링(생성, 수정)
