@@ -19,6 +19,6 @@ public class AlbumRequestDTO {
     @Size(max = 15, message = "앨범 종류는 최대 15글자까지 입력 가능합니다.")
     private String albumType;
 
-    @Size(max = 20, message = "앨범 설명은 최대 100글자까지 입력 가능합니다.")
+    @Size(max = 100, message = "앨범 설명은 최대 100글자까지 입력 가능합니다.")
     private String description;
 }
