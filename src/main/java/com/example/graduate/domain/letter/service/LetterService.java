@@ -96,7 +96,15 @@ public class LetterService {
         String keyName = amazonS3Manager.generateLetterKeyName(file, savedUuid);
         return amazonS3Manager.uploadFile(keyName, file);
     }
+    
+    //기본 이미지 처리
+    private static final String[] DEFAULT_IMAGES = {"defaultImage1", "defaultImage2", "defaultImage3"};
 
+    private String pickDefaultImage() {
+        int idx = Math.abs(UUID.randomUUID().hashCode()) % DEFAULT_IMAGES.length;
+        return DEFAULT_IMAGES[idx];
+    }
+    
     @Transactional
     public void createLetter(Long albumId, LetterCreateRequestDTO requestDTO, MultipartFile file) {
         albumRepository.findById(albumId)
@@ -104,7 +112,9 @@ public class LetterService {
 
         //이미지 처리
         String picUrl = handlePicUrl(file);
-
+        if (picUrl == null) {
+            picUrl = pickDefaultImage(); // <<<< 추가
+        }
         //작성자 가져오기
         Long userId = getCurrentUserId();
 
@@ -147,7 +157,7 @@ public class LetterService {
 
             //생성 로직과 동일한 규칙으로 이미지 업로드
             String newPicUrl = handlePicUrl(file);
-            letter.setPicUrl(newPicUrl);
+            letter.setPicUrl(newPicUrl != null ? newPicUrl : pickDefaultImage());
         }
 
         if (requestDTO.getWriterName() != null) {
