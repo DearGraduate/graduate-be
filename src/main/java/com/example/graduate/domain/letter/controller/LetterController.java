@@ -100,7 +100,7 @@ public class LetterController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime lastUpdatedAt,
             @RequestParam(required = false) Long lastLetterId
     ) {
-        LetterListResponseDTO result = letterService.getLettersByAlbum(albumId, limit, lastUpdatedAt, lastLetterId);
+        LetterListResponseDTO result = letterService.getHomeLettersByAlbum(albumId, limit, lastUpdatedAt, lastLetterId);
         return ApiResponse.of(LetterSuccessStatus.READ_SUCCESS, result);
     }
 
