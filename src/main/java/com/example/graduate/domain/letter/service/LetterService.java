@@ -213,9 +213,9 @@ public class LetterService {
         int queryCount = fetchCount + 1;
 
         if (lastUpdatedAt == null || lastLetterId == null) {
-            letters = letterRepository.findTopByOrderByUpdatedAtDesc(queryCount);
+            letters = letterRepository.findAllLetters(queryCount);
         } else {
-            letters = letterRepository.findByUpdatedAtAndIdBeforeOrderByUpdatedAtDesc(lastUpdatedAt, lastLetterId, queryCount);
+            letters = letterRepository.findAllLettersBefore(lastUpdatedAt, lastLetterId, queryCount);
         }
 
         boolean isLast = letters.size() <= fetchCount;
@@ -236,28 +236,33 @@ public class LetterService {
 
     //특정 앨범에 대한 축하글 조회
     public LetterListResponseDTO getLettersByAlbum(Long albumId, String limit, LocalDateTime lastUpdatedAt, Long lastLetterId) {
+        //파라미터가 all이면 Integer.MAX_VALUE 처리, 아니면 받은 숫자로
         int fetchCount = "all".equalsIgnoreCase(limit) ? Integer.MAX_VALUE : Integer.parseInt(limit);
+        //사용자가 원하는 갯수보다 하나 더 가져오기 -> 뒤에 축하글이 더 남아있는지 확인하기 위해
         int queryCount = fetchCount + 1;
+        //현재 로그인한 사용자 가져오기
         Long userId = getCurrentUserId();
 
+        //앨범 주인 확인하기 -> 앨범 주인과 로그인한 사용자 관계에 따라 보여지는 축하글이 다르기 때문
         boolean isOwner = albumRepository.findById(albumId)
+                //위에서 앨범을 찾으면 album 객체 꺼내서 album.getUserId().equals(userId)를 실행
                 .map(album -> album.getUserId().equals(userId))
                 .orElseThrow(() -> new GeneralException(LetterErrorStatus.ALBUM_NOT_FOUND));
 
         List<Letter> letters;
 
         if (isOwner) {
-            // 앨범 주인은 모든 글 조회
-            if (lastUpdatedAt == null || lastLetterId == null) {
+            //앨범 주인은 모든 글 조회
+            if (lastUpdatedAt == null || lastLetterId == null) { //첫 페이지 조회
                 letters = letterRepository.findByAlbumIdOrderByUpdatedAtDesc(albumId, queryCount);
-            } else {
+            } else { //첫 페이지 조회가 아닌 경우
                 letters = letterRepository.findByAlbumIdAndUpdatedAtAndIdBeforeOrderByUpdatedAtDesc(albumId, lastUpdatedAt, lastLetterId, queryCount);
             }
         } else {
-            // 앨범 주인이 아닌 경우: 본인 글 + 공개된 글만
-            if (lastUpdatedAt == null || lastLetterId == null) {
+            //앨범 주인이 아닌 경우: 본인 글 + 공개된 글만
+            if (lastUpdatedAt == null || lastLetterId == null) { //첫 페이지 조회
                 letters = letterRepository.findVisibleLettersByAlbum(albumId, userId, PageRequest.of(0, queryCount));
-            } else {
+            } else { //첫 페이지 조회가 아닌 경우
                 letters = letterRepository.findVisibleLettersByAlbumAndCursor(albumId, userId, lastUpdatedAt, lastLetterId, PageRequest.of(0, queryCount));
             }
         }

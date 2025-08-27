@@ -14,30 +14,38 @@ import java.util.List;
 @Repository
 public interface LetterRepository extends JpaRepository<Letter, Long> {
 
+    //앨범 상관 없이 전체 축하글을 최신순으로 가져오기 - 처음 페이징
+    //COALESCE : updatedAt이 있으면 해당 값 사용. 만약 updatedAt이 null이면 createdAt을 대신 사용
     @Query("SELECT l FROM Letter l ORDER BY COALESCE(l.updatedAt, l.createdAt) DESC, l.letterId DESC")
-    List<Letter> findTopByOrderByUpdatedAtDesc(Pageable pageable);
+    List<Letter> findAllLetters(Pageable pageable);
 
+    default List<Letter> findAllLetters(int limit) {
+        return findAllLetters(PageRequest.of(0, limit));
+    }
+
+    //앨범 상관 없이 전체 축하글을 최신순으로 가져오기 - 처음 1회 이후 페이징
     @Query("""
         SELECT l FROM Letter l 
         WHERE (COALESCE(l.updatedAt, l.createdAt) < :lastUpdatedAt)
            OR (COALESCE(l.updatedAt, l.createdAt) = :lastUpdatedAt AND l.letterId < :lastLetterId)
         ORDER BY COALESCE(l.updatedAt, l.createdAt) DESC, l.letterId DESC
     """)
-    List<Letter> findByUpdatedAtAndIdBeforeOrderByUpdatedAtDesc(
+    List<Letter> findAllLettersBefore(
             @Param("lastUpdatedAt") LocalDateTime lastUpdatedAt,
             @Param("lastLetterId") Long lastLetterId,
             Pageable pageable
     );
+    default List<Letter> findAllLettersBefore(LocalDateTime lastUpdatedAt, Long lastLetterId, int limit) {
+        return findAllLettersBefore(lastUpdatedAt, lastLetterId, PageRequest.of(0, limit));
+    }
+
+
 
     void deleteAllByAlbumId(Long albumId);
 
-    default List<Letter> findTopByOrderByUpdatedAtDesc(int limit) {
-        return findTopByOrderByUpdatedAtDesc(PageRequest.of(0, limit));
-    }
 
-    default List<Letter> findByUpdatedAtAndIdBeforeOrderByUpdatedAtDesc(LocalDateTime lastUpdatedAt, Long lastLetterId, int limit) {
-        return findByUpdatedAtAndIdBeforeOrderByUpdatedAtDesc(lastUpdatedAt, lastLetterId, PageRequest.of(0, limit));
-    }
+
+
 
     // 특정 앨범의 축하글 조회 (limit만 사용)
     @Query("""
@@ -113,11 +121,14 @@ public interface LetterRepository extends JpaRepository<Letter, Long> {
     );
 
 
+
+
+
     //홈화면 letter 가져오기
-    // 1) 첫 페이지: 공개글만 최신순 + 페이지 사이즈 지정
+    //첫 페이지: 공개글만 최신순 + 페이지 사이즈 지정
     List<Letter> findByAlbumIdAndIsPublicTrueOrderByUpdatedAtDesc(Long albumId, Pageable pageable);
 
-    // 2) 다음 페이지: 공개글만 + 커서 조건 (updatedAt DESC, tie-breaker: letterId DESC)
+    //다음 페이지: 공개글만 + 커서 조건 (updatedAt DESC, tie-breaker: letterId DESC)
     @Query("""
        SELECT l
        FROM Letter l
